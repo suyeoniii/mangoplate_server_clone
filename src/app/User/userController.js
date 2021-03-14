@@ -2,8 +2,10 @@ const jwtMiddleware = require("../../../config/jwtMiddleware");
 const userProvider = require("../../app/User/userProvider");
 const userService = require("../../app/User/userService");
 const baseResponse = require("../../../config/baseResponseStatus");
+const secret_config = require("../../../config//secret");
 const { response, errResponse } = require("../../../config/response");
 const { smtpTransport } = require("../../../config/email.js");
+var request = require("request");
 
 const regexEmail = require("regex-email");
 const { emit } = require("nodemon");
@@ -181,17 +183,43 @@ exports.check = async function (req, res) {
  * [GET] /app/login/naver
  */
 exports.naverLogin = async function (req, res) {
-  //passport.authenticate("naver", null);
+  const token = req.body.accessToken;
+  const header = "Bearer " + token; //Bearer 다음에 공백 추가
+  const api_url = "https://openapi.naver.com/v1/nid/me";
+  const options = {
+    url: api_url,
+    headers: { Authorization: header },
+  };
+  request.get(options, async function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      const obj = JSON.parse(body);
+      const email = obj.response.email;
+      const profile_img = obj.response.profile_image;
+      const phone = obj.response.mobile;
+      const name = obj.response.name;
 
-  const { email, password } = req.body;
+      if (!email) return res.send(response(baseResponse.SIGNUP_EMAIL_EMPTY));
+      if (!name) return res.send(response(baseResponse.SIGNUP_NICKNAME_EMPTY));
 
-  const signInResponse = await userService.postSignIn(email, password);
-  return res.send(signInResponse);
+      const signUpResponse = await userService.createNaverUser(
+        email,
+        name,
+        phone,
+        profile_img
+      );
+
+      return res.send(signUpResponse);
+    } else {
+      if (response != null) {
+        res.send(errResponse(baseResponse.NAVER_LOGIN_FAIL));
+      }
+    }
+  });
 };
 
 /**
  * API No.
- * API Name : 이메일 인증 API
+ * API Name : 인증 메일 전송 API
  * [GET] /app/email-check
  */
 exports.sendEmail = async function (req, res) {

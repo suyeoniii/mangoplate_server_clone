@@ -21,8 +21,7 @@ module.exports = function (app) {
   app.get("/app/email-check", user.emailVerify);
 
   //네이버 로그인
-  //app.get("/app/login/naver", user.naverLogin);
-  //app.get("/naver/callback", user.naverCallback);
+  app.get("/app/login/naver", user.naverLogin);
 
   // 회원 정보 수정 API (JWT 검증 및 Validation - 메소드 체이닝 방식으로 jwtMiddleware 사용)
   //app.patch('/app/users/:userId', jwtMiddleware, user.patchUsers)

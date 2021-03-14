@@ -37,6 +37,16 @@ exports.emailCheck = async function (email) {
 
   return emailCheckResult;
 };
+exports.naverEmailCheck = async function (email) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const emailCheckResult = await userDao.selectNaverUserEmail(
+    connection,
+    email
+  );
+  connection.release();
+
+  return emailCheckResult;
+};
 exports.emailVerifyCheck = async function (email) {
   const connection = await pool.getConnection(async (conn) => conn);
   const emailCheckResult = await userDao.selectVerifiedEmail(connection, email);

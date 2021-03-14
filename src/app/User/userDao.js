@@ -13,7 +13,17 @@ async function selectUserEmail(connection, email) {
   const selectUserEmailQuery = `
                 SELECT idx, userEmail
                 FROM User 
-                WHERE userEmail = ?;
+                WHERE userEmail = ? AND loginType=0;
+                `;
+  const [emailRows] = await connection.query(selectUserEmailQuery, email);
+  return emailRows;
+}
+// 이메일로 회원 조회
+async function selectNaverUserEmail(connection, email) {
+  const selectUserEmailQuery = `
+                SELECT idx, userEmail, loginType
+                FROM User 
+                WHERE userEmail = ? AND loginType=1;
                 `;
   const [emailRows] = await connection.query(selectUserEmailQuery, email);
   return emailRows;
@@ -111,6 +121,19 @@ async function insertEmailVerify(connection, email) {
   return insertEmailRow[0];
 }
 
+//네이버 로그인 회원조회
+async function insertNaverUser(connection, insertUserParams) {
+  const insertEmailQuery = `
+  INSERT INTO User(userEmail, nickname, phone, profileImg, loginType)
+  VALUES(?, ?, ?, ?, 1);
+  `;
+  const insertEmailRow = await connection.query(
+    insertEmailQuery,
+    insertUserParams
+  );
+  return insertEmailRow;
+}
+
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -122,4 +145,6 @@ module.exports = {
   updateEmailVerify,
   insertEmailVerify,
   selectVerifiedEmail,
+  insertNaverUser,
+  selectNaverUserEmail,
 };

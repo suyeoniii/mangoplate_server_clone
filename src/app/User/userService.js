@@ -170,3 +170,44 @@ exports.postEmailVerify = async function (email) {
     return errResponse({ message: "이메일 인증에 실패했습니다" });
   }
 };
+
+exports.createNaverUser = async function (email, nickname, phone, profile_img) {
+  try {
+    // 가입여부
+    const emailRows = await userProvider.naverEmailCheck(email);
+    var userIdx;
+    if (emailRows.length < 1) {
+      //소셜 회원가입
+      phone = phone.replace(/-/gi, ""); //하이픈 제거
+      const insertUserParams = [email, nickname, phone, profile_img];
+      const connection = await pool.getConnection(async (conn) => conn);
+
+      const userIdResult = await userDao.insertNaverUser(
+        connection,
+        insertUserParams
+      );
+      connection.release();
+      userIdx = userIdResult[0].insertId;
+    } else {
+      userIdx = emailRows[0].idx;
+    }
+    //토큰 생성 Service
+    let token = await jwt.sign(
+      {
+        userIdx: userIdx,
+      }, // 토큰의 내용(payload)
+      secret_config.jwtsecret, // 비밀키
+      {
+        expiresIn: "365d",
+        subject: "userInfo",
+      } // 유효 기간 365일
+    );
+    return response(baseResponse.SUCCESS, {
+      userIdx: userIdx,
+      jwt: token,
+    });
+  } catch (err) {
+    logger.error(`App - createNaverUser Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};
