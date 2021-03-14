@@ -42,7 +42,7 @@ exports.createUser = async function (
 
     const connection = await pool.getConnection(async (conn) => conn);
 
-    const userIdResult = await userDao.insertUserInfo(
+    const userIdResult = await userDao.insertUser(
       connection,
       insertUserInfoParams
     );
@@ -64,7 +64,7 @@ exports.postSignIn = async function (email, password) {
     if (emailRows.length < 1)
       return errResponse(baseResponse.SIGNIN_EMAIL_WRONG);
 
-    const selectEmail = emailRows[0].email;
+    const selectEmail = emailRows[0].userEmail;
 
     // 비밀번호 확인
     const hashedPassword = await crypto
@@ -72,11 +72,15 @@ exports.postSignIn = async function (email, password) {
       .update(password)
       .digest("hex");
 
+    console.log(hashedPassword);
+
     const selectUserPasswordParams = [selectEmail, hashedPassword];
     const passwordRows = await userProvider.passwordCheck(
       selectUserPasswordParams
     );
 
+    if (passwordRows.length < 1)
+      return errResponse(baseResponse.SIGNIN_PASSWORD_WRONG);
     if (passwordRows[0].password !== hashedPassword) {
       return errResponse(baseResponse.SIGNIN_PASSWORD_WRONG);
     }
@@ -84,18 +88,15 @@ exports.postSignIn = async function (email, password) {
     // 계정 상태 확인
     const userInfoRows = await userProvider.accountCheck(email);
 
-    if (userInfoRows[0].status === "INACTIVE") {
-      return errResponse(baseResponse.SIGNIN_INACTIVE_ACCOUNT);
-    } else if (userInfoRows[0].status === "DELETED") {
+    if (userInfoRows[0].status === 1)
       return errResponse(baseResponse.SIGNIN_WITHDRAWAL_ACCOUNT);
-    }
 
     console.log(userInfoRows[0].id); // DB의 userId
 
     //토큰 생성 Service
     let token = await jwt.sign(
       {
-        userId: userInfoRows[0].id,
+        userIdx: userInfoRows[0].id,
       }, // 토큰의 내용(payload)
       secret_config.jwtsecret, // 비밀키
       {
@@ -105,7 +106,7 @@ exports.postSignIn = async function (email, password) {
     );
 
     return response(baseResponse.SUCCESS, {
-      userId: userInfoRows[0].id,
+      userIdx: userInfoRows[0].idx,
       jwt: token,
     });
   } catch (err) {

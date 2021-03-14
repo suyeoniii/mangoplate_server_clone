@@ -135,7 +135,7 @@ module.exports = {
   SIGNIN_EMAIL_WRONG: {
     isSuccess: false,
     code: 3003,
-    message: "아이디가 잘못 되었습니다.",
+    message: "이메일이 잘못 되었습니다.",
   },
   SIGNIN_PASSWORD_WRONG: {
     isSuccess: false,

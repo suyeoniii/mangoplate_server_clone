@@ -25,8 +25,9 @@ exports.postUsers = async function (req, res) {
   // 길이 체크
   if (email.length > 30)
     return res.send(response(baseResponse.SIGNUP_EMAIL_LENGTH));
-  if (password.length >= 6 && password.length <= 12)
+  if (password.length < 6 || password.length > 12) {
     return res.send(response(baseResponse.SIGNUP_PASSWORD_LENGTH));
+  }
   if (nickname.length < 2)
     return res.send(response(baseResponse.SIGNUP_NICKNAME_LENGTH));
   // 형식 체크 (by 정규표현식)
@@ -97,7 +98,18 @@ exports.getUserById = async function (req, res) {
 exports.login = async function (req, res) {
   const { email, password } = req.body;
 
-  // TODO: email, password 형식적 Validation
+  // 빈 값 체크
+  if (!email) return res.send(response(baseResponse.SIGNUP_EMAIL_EMPTY));
+  if (!password) return res.send(response(baseResponse.SIGNUP_PASSWORD_EMPTY));
+  // 길이 체크
+  if (email.length > 30)
+    return res.send(response(baseResponse.SIGNUP_EMAIL_LENGTH));
+  if (password.length < 6 || password.length > 12) {
+    return res.send(response(baseResponse.SIGNUP_PASSWORD_LENGTH));
+  }
+  // 형식 체크 (by 정규표현식)
+  if (!regexEmail.test(email))
+    return res.send(response(baseResponse.SIGNUP_EMAIL_ERROR_TYPE));
 
   const signInResponse = await userService.postSignIn(email, password);
 
