@@ -20,8 +20,11 @@ module.exports = function (app) {
   //이메일 인증 확인 API
   app.get("/app/email-check", user.emailVerify);
 
+  //회원가입 - 이메일, 비밀번호 확인
+  app.post("/app/users/check", user.postUsersCheck);
+
   //네이버 로그인
-  app.get("/app/login/naver", user.naverLogin);
+  app.post("/app/login/naver", user.naverLogin);
 
   // 회원 정보 수정 API (JWT 검증 및 Validation - 메소드 체이닝 방식으로 jwtMiddleware 사용)
   //app.patch('/app/users/:userId', jwtMiddleware, user.patchUsers)

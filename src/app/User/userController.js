@@ -262,3 +262,71 @@ exports.emailVerify = async function (req, res) {
   const emailVerifyResponse = await userService.postEmailVerify(email);
   return res.send(emailVerifyResponse);
 };
+
+/**
+ * API No. 아이디,비밀번호 확인
+ * [POST] /app/users/check
+ */
+exports.postUsersCheck = async function (req, res) {
+  /**
+   * Body: email, password, password_check
+   */
+  const { email, password, password_check } = req.body;
+
+  // 빈 값 체크
+  if (!email) return res.send(response(baseResponse.SIGNUP_EMAIL_EMPTY));
+  if (!password) return res.send(response(baseResponse.SIGNUP_PASSWORD_EMPTY));
+  if (!password_check)
+    return res.send(response(baseResponse.SIGNUP_PASSWORD_CHECK_EMPTY));
+
+  // 길이 체크
+  if (email.length > 30)
+    return res.send(response(baseResponse.SIGNUP_EMAIL_LENGTH));
+  if (password.length < 6 || password.length > 12)
+    return res.send(response(baseResponse.SIGNUP_PASSWORD_LENGTH));
+  if (password_check.length < 6 || password_check.length > 12)
+    return res.send(response(baseResponse.SIGNUP_PASSWORD_LENGTH));
+
+  //비밀번호 일치 확인
+  if (password !== password_check)
+    return res.send(response(baseResponse.SIGNUP_PASSWORD_NOT_MATCH));
+
+  // 형식 체크 (by 정규표현식)
+  if (!regexEmail.test(email))
+    return res.send(response(baseResponse.SIGNUP_EMAIL_ERROR_TYPE));
+
+  // 이메일 중복 확인
+  const emailRows = await userProvider.emailCheck(email);
+  if (emailRows.length > 0)
+    return res.send(errResponse(baseResponse.SIGNUP_REDUNDANT_EMAIL));
+  //이메일 인증 여부 확인
+  const emailVerifyRows = await userProvider.emailVerifyCheck(email);
+  if (emailVerifyRows.length < 1)
+    return res.send(errResponse(baseResponse.SIGNUP_EMAIL_NOT_VERIFIED));
+  if (emailVerifyRows[0].isVerified === 0 || emailVerifyRows[0].time === 1)
+    return res.send(errResponse(baseResponse.SIGNUP_EMAIL_NOT_VERIFIED));
+
+  return res.send(response(baseResponse.SUCCESS));
+};
+/**
+ * API No.
+ * API Name : 맛집조회 (+지역 선택)
+ * [GET] /app/users
+ */
+exports.getRestaurants = async function (req, res) {
+  /**
+   * Query String: area
+   */
+  const area = req.query.area;
+  console.log(area);
+
+  /*if (!email) {
+    // 유저 전체 조회
+    const userListResult = await userProvider.retrieveUserList();
+    return res.send(response(baseResponse.SUCCESS, userListResult));
+  } else {
+    // 유저 검색 조회
+    const userListByEmail = await userProvider.retrieveUserList(email);
+    return res.send(response(baseResponse.SUCCESS, userListByEmail));
+  }*/
+};

@@ -139,7 +139,7 @@ module.exports = {
     code: 2023,
     message: "이메일 전송 실패",
   },
-  SIGNUP_SENDEMAIL_FAIL: {
+  NAVER_LOGIN_FAIL: {
     isSuccess: false,
     code: 2024,
     message: "네이버 로그인 실패",
