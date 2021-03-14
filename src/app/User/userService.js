@@ -26,6 +26,13 @@ exports.createUser = async function (
     if (emailRows.length > 0)
       return errResponse(baseResponse.SIGNUP_REDUNDANT_EMAIL);
 
+    //이메일 인증 여부 확인
+    const emailVerifyRows = await userProvider.emailVerifyCheck(email);
+    if (emailVerifyRows.length < 1)
+      return errResponse(baseResponse.SIGNUP_EMAIL_NOT_VERIFIED);
+    if (emailVerifyRows[0].isVerified === 0 || emailVerifyRows[0].time === 1)
+      return errResponse(baseResponse.SIGNUP_EMAIL_NOT_VERIFIED);
+
     // 비밀번호 암호화
     const hashedPassword = await crypto
       .createHash("sha512")
@@ -104,7 +111,6 @@ exports.postSignIn = async function (email, password) {
         subject: "userInfo",
       } // 유효 기간 365일
     );
-
     return response(baseResponse.SUCCESS, {
       userIdx: userInfoRows[0].idx,
       jwt: token,
@@ -121,7 +127,6 @@ exports.postSignIn = async function (email, password) {
 
 exports.editUser = async function (id, nickname) {
   try {
-    console.log(id);
     const connection = await pool.getConnection(async (conn) => conn);
     const editUserResult = await userDao.updateUserInfo(
       connection,
@@ -134,5 +139,34 @@ exports.editUser = async function (id, nickname) {
   } catch (err) {
     logger.error(`App - editUser Service error\n: ${err.message}`);
     return errResponse(baseResponse.DB_ERROR);
+  }
+};
+
+//이메일 인증
+exports.postEmailVerify = async function (email) {
+  try {
+    // 이메일 여부 확인
+    const emailRows = await userProvider.emailVerifyCheck(email);
+    if (emailRows.length > 1) {
+      //update
+      const connection = await pool.getConnection(async (conn) => conn);
+      const emailVerifyResult = await userDao.updateEmailVerify(
+        connection,
+        email
+      );
+      connection.release();
+    } else {
+      //create
+      const connection = await pool.getConnection(async (conn) => conn);
+      const emailVerifyResult = await userDao.insertEmailVerify(
+        connection,
+        email
+      );
+      connection.release();
+    }
+    return response({ message: "이메일 인증이 완료되었습니다" });
+  } catch (err) {
+    logger.error(`App - EmailVerify Service error\n: ${err.message}`);
+    return errResponse({ message: "이메일 인증에 실패했습니다" });
   }
 };

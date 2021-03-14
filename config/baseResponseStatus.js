@@ -119,7 +119,26 @@ module.exports = {
     code: 2019,
     message: "휴대폰번호 형식을 확인해주세요",
   },
-
+  SIGNUP_PASSWORD_CHECK_EMPTY: {
+    isSuccess: false,
+    code: 2020,
+    message: "비밀번호 확인을 입력해주세요",
+  },
+  SIGNUP_PASSWORD_NOT_MATCH: {
+    isSuccess: false,
+    code: 2021,
+    message: "비밀번호가 일치하지 않습니다",
+  },
+  SIGNUP_PASSWORD_ERROR_TYPE: {
+    isSuccess: false,
+    code: 2022,
+    message: "비밀번호는 영문,숫자 조합이어야 합니다",
+  },
+  SIGNUP_SENDEMAIL_FAIL: {
+    isSuccess: false,
+    code: 2023,
+    message: "이메일 전송 실패",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,
@@ -151,6 +170,11 @@ module.exports = {
     isSuccess: false,
     code: 3006,
     message: "탈퇴 된 계정입니다. 고객센터에 문의해주세요.",
+  },
+  SIGNUP_EMAIL_NOT_VERIFIED: {
+    isSuccess: false,
+    code: 3007,
+    message: "이메일 인증이 완료되지 않았습니다",
   },
 
   //Connection, Transaction 등의 서버 오류

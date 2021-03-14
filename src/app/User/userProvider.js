@@ -12,7 +12,6 @@ exports.retrieveUserList = async function (email) {
     connection.release();
 
     return userListResult;
-
   } else {
     const connection = await pool.getConnection(async (conn) => conn);
     const userListResult = await userDao.selectUserEmail(connection, email);
@@ -38,12 +37,19 @@ exports.emailCheck = async function (email) {
 
   return emailCheckResult;
 };
+exports.emailVerifyCheck = async function (email) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const emailCheckResult = await userDao.selectVerifiedEmail(connection, email);
+  connection.release();
+
+  return emailCheckResult;
+};
 
 exports.passwordCheck = async function (selectUserPasswordParams) {
   const connection = await pool.getConnection(async (conn) => conn);
   const passwordCheckResult = await userDao.selectUserPassword(
-      connection,
-      selectUserPasswordParams
+    connection,
+    selectUserPasswordParams
   );
   connection.release();
   return passwordCheckResult[0];

@@ -18,6 +18,19 @@ async function selectUserEmail(connection, email) {
   const [emailRows] = await connection.query(selectUserEmailQuery, email);
   return emailRows;
 }
+//이메일 인증 조회
+async function selectVerifiedEmail(connection, email) {
+  const selectUserEmailQuery = `
+                SELECT idx, email, case
+                when TIMESTAMPDIFF(Hour, updatedAt, current_timestamp()) > 24
+                    then 1
+                end  as isExpired, isVerified
+                FROM EmailCheck
+                WHERE email = ?;
+                `;
+  const [emailRows] = await connection.query(selectUserEmailQuery, email);
+  return emailRows;
+}
 
 // userId 회원 조회
 async function selectUserId(connection, userId) {
@@ -80,6 +93,24 @@ async function updateUser(connection, id, nickname) {
   return updateUserRow[0];
 }
 
+async function updateEmailVerify(connection, email) {
+  const updateEmailQuery = `
+  UPDATE EmailCheck
+  SET isVerified = 1
+  WHERE email = ?;`;
+  const updateEmailRow = await connection.query(updateEmailQuery, email);
+  return updateEmailRow[0];
+}
+
+async function insertEmailVerify(connection, email) {
+  const insertEmailQuery = `
+  INSERT INTO EmailCheck(email, isVerified)
+  VALUES(?, 1);
+  `;
+  const insertEmailRow = await connection.query(insertEmailQuery, email);
+  return insertEmailRow[0];
+}
+
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -88,4 +119,7 @@ module.exports = {
   selectUserPassword,
   selectUserAccount,
   updateUser,
+  updateEmailVerify,
+  insertEmailVerify,
+  selectVerifiedEmail,
 };
