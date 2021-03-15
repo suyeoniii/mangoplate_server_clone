@@ -308,25 +308,3 @@ exports.postUsersCheck = async function (req, res) {
 
   return res.send(response(baseResponse.SUCCESS));
 };
-/**
- * API No.
- * API Name : 맛집조회 (+지역 선택)
- * [GET] /app/users
- */
-exports.getRestaurants = async function (req, res) {
-  /**
-   * Query String: area
-   */
-  const area = req.query.area;
-  console.log(area);
-
-  /*if (!email) {
-    // 유저 전체 조회
-    const userListResult = await userProvider.retrieveUserList();
-    return res.send(response(baseResponse.SUCCESS, userListResult));
-  } else {
-    // 유저 검색 조회
-    const userListByEmail = await userProvider.retrieveUserList(email);
-    return res.send(response(baseResponse.SUCCESS, userListByEmail));
-  }*/
-};

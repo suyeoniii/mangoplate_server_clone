@@ -45,9 +45,9 @@ async function selectVerifiedEmail(connection, email) {
 // userId 회원 조회
 async function selectUserId(connection, userId) {
   const selectUserIdQuery = `
-                 SELECT id, email, nickname 
+                 SELECT idx, userEmail, nickname 
                  FROM User 
-                 WHERE id = ?;
+                 WHERE idx = ?;
                  `;
   const [userRow] = await connection.query(selectUserIdQuery, userId);
   return userRow;

@@ -144,6 +144,31 @@ module.exports = {
     code: 2024,
     message: "네이버 로그인 실패",
   },
+  RESTAURANT_SORT_ERROR_TYPE: {
+    isSuccess: false,
+    code: 2025,
+    message: "정렬기준이 잘못되었습니다",
+  },
+  RESTAURANT_CATEGORY_ERROR_TYPE: {
+    isSuccess: false,
+    code: 2026,
+    message: "카테고리 값이 잘못되었습니다",
+  },
+  RESTAURANT_PARKING_ERROR_TYPE: {
+    isSuccess: false,
+    code: 2027,
+    message: "주차장여부 값이 잘못되었습니다",
+  },
+  RESTAURANT_FOOD_ERROR_TYPE: {
+    isSuccess: false,
+    code: 2028,
+    message: "음식종류가 잘못되었습니다",
+  },
+  RESTAURANT_PRICE_ERROR_TYPE: {
+    isSuccess: false,
+    code: 2029,
+    message: "가격범위 값이 잘못되었습니다",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,
@@ -155,7 +180,6 @@ module.exports = {
     code: 3002,
     message: "중복된 닉네임입니다.",
   },
-
   SIGNIN_EMAIL_WRONG: {
     isSuccess: false,
     code: 3003,
@@ -181,7 +205,11 @@ module.exports = {
     code: 3007,
     message: "이메일 인증이 완료되지 않았습니다",
   },
-
+  SIGNUP_EMAIL_NOT_VERIFIED: {
+    isSuccess: false,
+    code: 3008,
+    message: "존재하지 않는 userIdx 입니다",
+  },
   //Connection, Transaction 등의 서버 오류
   DB_ERROR: { isSuccess: false, code: 4000, message: "데이터 베이스 에러" },
   SERVER_ERROR: { isSuccess: false, code: 4001, message: "서버 에러" },

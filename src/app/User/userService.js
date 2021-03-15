@@ -79,8 +79,6 @@ exports.postSignIn = async function (email, password) {
       .update(password)
       .digest("hex");
 
-    console.log(hashedPassword);
-
     const selectUserPasswordParams = [selectEmail, hashedPassword];
     const passwordRows = await userProvider.passwordCheck(
       selectUserPasswordParams
@@ -98,12 +96,12 @@ exports.postSignIn = async function (email, password) {
     if (userInfoRows[0].status === 1)
       return errResponse(baseResponse.SIGNIN_WITHDRAWAL_ACCOUNT);
 
-    console.log(userInfoRows[0].id); // DB의 userId
+    console.log(userInfoRows[0].idx); // DB의 userId
 
     //토큰 생성 Service
     let token = await jwt.sign(
       {
-        userIdx: userInfoRows[0].id,
+        userIdx: userInfoRows[0].idx,
       }, // 토큰의 내용(payload)
       secret_config.jwtsecret, // 비밀키
       {
