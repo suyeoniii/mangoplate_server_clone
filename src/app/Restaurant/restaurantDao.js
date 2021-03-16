@@ -77,17 +77,17 @@ async function selectRestaurantList(
   if (parking) {
     selectRestaurantListQuery += ` AND parking=${parking}`;
   }
+  selectRestaurantListQuery += ` GROUP BY Res.idx`;
   if (sort == 3) {
     selectRestaurantListQuery += ` ORDER BY reviews`;
   }
-  selectRestaurantListQuery += ` GROUP BY Res.idx`;
   if (!limit) {
     limit = 20;
   }
   if (page) {
     selectRestaurantListQuery += ` LIMIT ${limit * (page - 1)},${limit}`;
   }
-  //console.log(selectRestaurantListQuery);
+  console.log(selectRestaurantListQuery);
   const [restaurantRows] = await connection.query(selectRestaurantListQuery);
   return restaurantRows;
 }
