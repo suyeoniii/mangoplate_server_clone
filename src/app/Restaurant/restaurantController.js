@@ -32,7 +32,7 @@ exports.getRestaurants = async function (req, res) {
     }
   }
 
-  if (sort > 3 || sort < 0)
+  if (sort > 2 || sort < 0)
     return res.send(response(baseResponse.RESTAURANT_SORT_ERROR_TYPE));
   if (category > 2 || category < 0)
     return res.send(response(baseResponse.RESTAURANT_CATEGORY_ERROR_TYPE));

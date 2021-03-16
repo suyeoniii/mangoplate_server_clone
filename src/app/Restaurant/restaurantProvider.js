@@ -40,6 +40,6 @@ exports.retrieveRestaurantList = async function (
     limit
   );
   connection.release();
-
+  console.log(typeof restaurantListResult[0].views);
   return restaurantListResult;
 };

@@ -13,13 +13,18 @@ async function selectRestaurantList(
 ) {
   console.log(userIdx);
   var selectRestaurantListQuery = `
-  select Res.idx, imgUrl, restaurantName, area, views, reviews
+  select Res.idx, imgUrl, restaurantName, area, views, reviews, score
   from Restaurant Res
-      inner join Review Rev on Res.idx=Rev.restaurantIdx
-  inner join (select count(*) as reviews, Res.idx idx from Review Rev
-      inner join Restaurant Res
-  where Rev.restaurantIdx = Res.idx
-  group by Res.idx) Revs on Revs.idx=Res.idx
+  inner join (select Round(sum(new_score)/count(*), 1) as score,count(*) as reviews, Rev.idx, Rev.restaurantIdx resIdx
+  from Review Rev
+      inner join (select
+      case
+      when Rev.score = 0 then 5
+      when Rev.score = 1 then 3
+      when Rev.score = 2 then 1
+  end as new_score, Rev.idx idx
+  from Review Rev) as Score on Score.idx=Rev.idx
+  group by Rev.restaurantIdx) as new_Rev on new_Rev.resIdx = Res.idx
   inner join (select count(*) as views, Res.idx idx from Viewed VI
       inner join Restaurant Res
   where VI.restaurantIdx = Res.idx
@@ -78,11 +83,18 @@ async function selectRestaurantList(
     selectRestaurantListQuery += ` AND parking=${parking}`;
   }
   selectRestaurantListQuery += ` GROUP BY Res.idx`;
-  if (sort == 3) {
-    selectRestaurantListQuery += ` ORDER BY reviews`;
+  if (!sort || sort == 0) {
+    selectRestaurantListQuery += ` ORDER BY score DESC`;
+  } else if (sort == 1) {
+    selectRestaurantListQuery += ` ORDER BY views DESC`;
+  } else if (sort == 2) {
+    selectRestaurantListQuery += ` ORDER BY reviews DESC`;
   }
   if (!limit) {
     limit = 20;
+  }
+  if (!page) {
+    page = 1;
   }
   if (page) {
     selectRestaurantListQuery += ` LIMIT ${limit * (page - 1)},${limit}`;
