@@ -13,7 +13,7 @@ async function selectRestaurantList(
 ) {
   console.log(userIdx);
   var selectRestaurantListQuery = `
-  select distinct Res.idx, imgUrl, restaurantName, area, views, reviews
+  select Res.idx, imgUrl, restaurantName, area, views, reviews
   from Restaurant Res
       inner join Review Rev on Res.idx=Rev.restaurantIdx
   inner join (select count(*) as reviews, Res.idx idx from Review Rev
@@ -28,7 +28,7 @@ async function selectRestaurantList(
   from ReviewImg RI
       inner join Review Rev on Rev.idx=RI.reviewIdx
       inner join Restaurant Res on Res.idx=Rev.restaurantIdx
-  ORDER BY Rev.createdAt limit 1) RIs on RIs.idx=Res.idx`;
+  ORDER BY Rev.createdAt) RIs on RIs.idx=Res.idx`;
   if (category == 1) {
     //가고싶다
     selectRestaurantListQuery += ` inner join (select Res.idx idx
@@ -80,6 +80,7 @@ async function selectRestaurantList(
   if (sort == 3) {
     selectRestaurantListQuery += ` ORDER BY reviews`;
   }
+  selectRestaurantListQuery += ` GROUP BY Res.idx`;
   if (!limit) {
     limit = 20;
   }
