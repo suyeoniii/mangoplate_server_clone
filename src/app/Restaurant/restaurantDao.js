@@ -9,12 +9,21 @@ async function selectRestaurantList(
   price,
   parking,
   page,
-  limit
+  limit,
+  lat,
+  long
 ) {
-  console.log(userIdx);
   var selectRestaurantListQuery = `
-  select Res.idx, imgUrl, restaurantName, area, views, reviews, score
-  from Restaurant Res
+  select Res.idx,imgUrl, restaurantName, area, views, reviews, score`;
+
+  if (lat && long) {
+    selectRestaurantListQuery += `,case when distance < 1
+  then Concat(Round(distance*1000,0),'m')
+             when distance >=1 then Concat(distance,'km')
+  end as distance`;
+  }
+
+  selectRestaurantListQuery += ` from Restaurant Res
   inner join (select Round(sum(new_score)/count(*), 1) as score,count(*) as reviews, Rev.idx, Rev.restaurantIdx resIdx
   from Review Rev
       inner join (select
@@ -34,6 +43,13 @@ async function selectRestaurantList(
       inner join Review Rev on Rev.idx=RI.reviewIdx
       inner join Restaurant Res on Res.idx=Rev.restaurantIdx
   ORDER BY Rev.createdAt) RIs on RIs.idx=Res.idx`;
+
+  if (lat && long) {
+    selectRestaurantListQuery += ` inner join (SELECT idx,
+    Round((6371*acos(cos(radians(${lat}))*cos(radians(lati))*cos(radians(longi)
+    -radians(${long}))+sin(radians(${lat}))*sin(radians(lati)))),2)
+    AS distance FROM Restaurant) dis on dis.idx=Res.idx`;
+  }
   if (category == 1) {
     //가고싶다
     selectRestaurantListQuery += ` inner join (select Res.idx idx
@@ -89,6 +105,8 @@ async function selectRestaurantList(
     selectRestaurantListQuery += ` ORDER BY views DESC`;
   } else if (sort == 2) {
     selectRestaurantListQuery += ` ORDER BY reviews DESC`;
+  } else if (sort == 3) {
+    selectRestaurantListQuery += ` ORDER BY dis.distance`;
   }
   if (!limit) {
     limit = 20;

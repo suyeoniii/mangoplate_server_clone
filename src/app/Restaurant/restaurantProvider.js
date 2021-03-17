@@ -15,7 +15,9 @@ exports.retrieveRestaurantList = async function (
   price,
   parking,
   page,
-  limit
+  limit,
+  lat,
+  long
 ) {
   if (userIdx) {
     const connection = await pool.getConnection(async (conn) => conn);
@@ -37,9 +39,10 @@ exports.retrieveRestaurantList = async function (
     price,
     parking,
     page,
-    limit
+    limit,
+    lat,
+    long
   );
   connection.release();
-  console.log(typeof restaurantListResult[0].views);
   return restaurantListResult;
 };

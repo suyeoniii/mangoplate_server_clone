@@ -169,6 +169,11 @@ module.exports = {
     code: 2029,
     message: "가격범위 값이 잘못되었습니다",
   },
+  LOCATION_FAIL: {
+    isSuccess: false,
+    code: 2030,
+    message: "현재 위치의 지역정보를 받아오는데 실패했습니다",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,
