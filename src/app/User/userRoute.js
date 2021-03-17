@@ -26,6 +26,12 @@ module.exports = function (app) {
   //네이버 로그인
   app.post("/app/login/naver", user.naverLogin);
 
+  //자동로그인
+  app.get("/app/login/auto", jwtMiddleware, user.autoLogin);
+
+  //로그아웃
+  app.patch("/app/logout", jwtMiddleware, user.logout);
+
   // 회원 정보 수정 API (JWT 검증 및 Validation - 메소드 체이닝 방식으로 jwtMiddleware 사용)
   //app.patch('/app/users/:userId', jwtMiddleware, user.patchUsers)
 };

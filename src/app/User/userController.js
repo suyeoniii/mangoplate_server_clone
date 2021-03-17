@@ -308,3 +308,27 @@ exports.postUsersCheck = async function (req, res) {
 
   return res.send(response(baseResponse.SUCCESS));
 };
+
+/**
+ * API No. 자동로그인
+ * [POST] /app/login/auto
+ */
+exports.autoLogin = async function (req, res) {
+  const userIdFromJWT = req.verifiedToken.userIdx;
+
+  const signInResponse = await userService.postAutoSignIn(userIdFromJWT);
+
+  return res.send(signInResponse);
+};
+
+/**
+ * API No. 로그아웃
+ * [PATCH] /app/logout
+ */
+exports.logout = async function (req, res) {
+  const userIdFromJWT = req.verifiedToken.userIdx;
+
+  const logoutResponse = await userService.patchJwtStatus(userIdFromJWT);
+
+  return res.send(logoutResponse);
+};

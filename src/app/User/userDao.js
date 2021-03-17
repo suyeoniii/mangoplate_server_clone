@@ -45,7 +45,7 @@ async function selectVerifiedEmail(connection, email) {
 // userId 회원 조회
 async function selectUserId(connection, userId) {
   const selectUserIdQuery = `
-                 SELECT idx, userEmail, nickname 
+                 SELECT idx, userEmail, nickname, status
                  FROM User 
                  WHERE idx = ?;
                  `;
@@ -133,6 +133,48 @@ async function insertNaverUser(connection, insertUserParams) {
   );
   return insertEmailRow;
 }
+//jwt status 업데이트
+async function updateJwtStatus(connection, userIdx) {
+  const updateJwtStatusQuery = `
+  UPDATE Jwt SET status=1 where userIdx=?
+  `;
+  const updateJwtStatusRow = await connection.query(
+    updateJwtStatusQuery,
+    userIdx
+  );
+  return updateJwtStatusRow;
+}
+
+//jwt token 업데이트
+async function updateJwtToken(connection, updateJwtTokenParams) {
+  const updateJwtTokenQuery = `
+  UPDATE Jwt SET token=?, status=0 where userIdx=?
+  `;
+  const updateJwtTokenRow = await connection.query(
+    updateJwtTokenQuery,
+    updateJwtTokenParams
+  );
+  return updateJwtTokenRow;
+}
+//login user 조회
+async function selectLoginUser(connection, userIdx) {
+  const selectJwtQuery = `
+  SELECT userIdx, status FROM Jwt WHERE userIdx=?;
+  `;
+  const selectJwtRow = await connection.query(selectJwtQuery, userIdx);
+  return selectJwtRow;
+}
+//login 추가
+async function insertLoginUser(connection, updateJwtTokenParams) {
+  const insertJwtQuery = `
+  INSERT INTO Jwt(token, userIdx) VALUES(?,?);
+  `;
+  const insertJwtRow = await connection.query(
+    insertJwtQuery,
+    updateJwtTokenParams
+  );
+  return insertJwtRow;
+}
 
 module.exports = {
   selectUser,
@@ -147,4 +189,8 @@ module.exports = {
   selectVerifiedEmail,
   insertNaverUser,
   selectNaverUserEmail,
+  updateJwtStatus,
+  updateJwtToken,
+  selectLoginUser,
+  insertLoginUser,
 };

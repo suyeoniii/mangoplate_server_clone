@@ -21,9 +21,9 @@ exports.retrieveUserList = async function (email) {
   }
 };
 
-exports.retrieveUser = async function (userId) {
+exports.retrieveUser = async function (userIdx) {
   const connection = await pool.getConnection(async (conn) => conn);
-  const userResult = await userDao.selectUserId(connection, userId);
+  const userResult = await userDao.selectUserId(connection, userIdx);
 
   connection.release();
 
@@ -71,4 +71,11 @@ exports.accountCheck = async function (email) {
   connection.release();
 
   return userAccountResult;
+};
+exports.loginCheck = async function (userIdx) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const loginResult = await userDao.selectLoginUser(connection, userIdx);
+  connection.release();
+
+  return loginResult;
 };

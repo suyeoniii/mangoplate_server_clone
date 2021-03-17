@@ -109,6 +109,25 @@ exports.postSignIn = async function (email, password) {
         subject: "userInfo",
       } // 유효 기간 365일
     );
+    const loginParams = [token, userInfoRows[0].idx];
+    const loginRows = await userProvider.loginCheck(userInfoRows[0].idx);
+    if (loginRows[0].length < 1) {
+      //insert
+      console.log("insert");
+      const connection = await pool.getConnection(async (conn) => conn);
+      const loginResult = await userDao.insertLoginUser(
+        connection,
+        loginParams
+      );
+      connection.release();
+    } else {
+      console.log("update");
+      //update
+      const connection = await pool.getConnection(async (conn) => conn);
+      const loginResult = await userDao.updateJwtToken(connection, loginParams);
+      connection.release();
+    }
+
     return response(baseResponse.SUCCESS, {
       userIdx: userInfoRows[0].idx,
       jwt: token,
@@ -116,6 +135,48 @@ exports.postSignIn = async function (email, password) {
   } catch (err) {
     logger.error(
       `App - postSignIn Service error\n: ${err.message} \n${JSON.stringify(
+        err
+      )}`
+    );
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};
+//자동로그인
+exports.postAutoSignIn = async function (userIdx) {
+  try {
+    // 계정 상태 확인
+    const userInfoRows = await userProvider.retrieveUser(userIdx);
+
+    if (userInfoRows.length < 1)
+      return errResponse(baseResponse.USER_NOT_EXIST);
+    if (userInfoRows.status === 1)
+      return errResponse(baseResponse.SIGNIN_WITHDRAWAL_ACCOUNT);
+
+    //토큰 생성 Service
+    let token = await jwt.sign(
+      {
+        userIdx: userInfoRows.idx,
+      }, // 토큰의 내용(payload)
+      secret_config.jwtsecret, // 비밀키
+      {
+        expiresIn: "365d",
+        subject: "userInfo",
+      } // 유효 기간 365일
+    );
+
+    //로그인 추가
+    const loginParams = [token, userIdx];
+    const connection = await pool.getConnection(async (conn) => conn);
+    const loginResult = await userDao.updateJwtToken(connection, loginParams);
+    connection.release();
+
+    return response(baseResponse.SUCCESS, {
+      userIdx: userInfoRows.idx,
+      jwt: token,
+    });
+  } catch (err) {
+    logger.error(
+      `App - postAutoSignIn Service error\n: ${err.message} \n${JSON.stringify(
         err
       )}`
     );
@@ -168,6 +229,26 @@ exports.postEmailVerify = async function (email) {
     return errResponse({ message: "이메일 인증에 실패했습니다" });
   }
 };
+//logout
+exports.patchJwtStatus = async function (userIdx) {
+  try {
+    // jwt table status update
+    const loginUserRows = await userProvider.loginCheck(userIdx);
+    if (loginUserRows[0].length < 1)
+      return errResponse(baseResponse.LOGIN_NOT_EXIST);
+    if (loginUserRows[0].status === 1)
+      return errResponse(baseResponse.LOGIN_NOT_EXIST);
+
+    const connection = await pool.getConnection(async (conn) => conn);
+    const userIdResult = await userDao.updateJwtStatus(connection, userIdx);
+    connection.release();
+
+    return response(baseResponse.SUCCESS);
+  } catch (err) {
+    logger.error(`App - Logout Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};
 
 exports.createNaverUser = async function (email, nickname, phone, profile_img) {
   try {
@@ -200,6 +281,22 @@ exports.createNaverUser = async function (email, nickname, phone, profile_img) {
         subject: "userInfo",
       } // 유효 기간 365일
     );
+    const loginParams = [token, userIdx];
+    if (loginRows[0].length < 1) {
+      //insert
+      const connection = await pool.getConnection(async (conn) => conn);
+      const loginResult = await userDao.insertLoginUser(
+        connection,
+        loginParams
+      );
+      connection.release();
+    } else {
+      //update
+      const connection = await pool.getConnection(async (conn) => conn);
+      const loginResult = await userDao.updateJwtToken(connection, loginParams);
+      connection.release();
+    }
+
     return response(baseResponse.SUCCESS, {
       userIdx: userIdx,
       jwt: token,

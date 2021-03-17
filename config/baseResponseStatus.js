@@ -203,17 +203,22 @@ module.exports = {
   SIGNIN_WITHDRAWAL_ACCOUNT: {
     isSuccess: false,
     code: 3006,
-    message: "탈퇴 된 계정입니다. 고객센터에 문의해주세요.",
+    message: "탈퇴된 계정입니다",
   },
   SIGNUP_EMAIL_NOT_VERIFIED: {
     isSuccess: false,
     code: 3007,
     message: "이메일 인증이 완료되지 않았습니다",
   },
-  SIGNUP_EMAIL_NOT_VERIFIED: {
+  USER_NOT_EXIST: {
     isSuccess: false,
     code: 3008,
     message: "존재하지 않는 userIdx 입니다",
+  },
+  LOGIN_NOT_EXIST: {
+    isSuccess: false,
+    code: 3009,
+    message: "로그인 되어있지 않습니다",
   },
   //Connection, Transaction 등의 서버 오류
   DB_ERROR: { isSuccess: false, code: 4000, message: "데이터 베이스 에러" },
