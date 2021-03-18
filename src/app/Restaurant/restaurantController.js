@@ -141,3 +141,43 @@ exports.getRestaurants = async function (req, res) {
     return res.send(response(baseResponse.SUCCESS, restaurantListResult));
   }
 };
+
+/**
+ * API No.
+ * API Name : 맛집 상세 조회
+ * [GET] /app/restaurants?area=""
+ */
+exports.getRestaurantsById = async function (req, res) {
+  /**
+   * path variable : restaurantIdx
+   */
+  const token = req.headers["x-access-token"] || req.query.token;
+  var userIdFromJWT;
+  const restaurantIdx = req.params.restaurantIdx;
+
+  //토큰 받은 경우
+  if (token) {
+    jwt.verify(token, secret_config.jwtsecret, (err, verifiedToken) => {
+      if (verifiedToken) {
+        userIdFromJWT = verifiedToken.userIdx;
+      }
+    });
+    if (!userIdFromJWT) {
+      return res.send(errResponse(baseResponse.TOKEN_VERIFICATION_FAILURE));
+    }
+  }
+
+  if (!restaurantIdx)
+    return res.send(response(baseResponse.RESTAURANT_ID_EMPTY));
+
+  const restaurantResult = await restaurantProvider.retrieveRestaurant(
+    userIdFromJWT,
+    restaurantIdx
+  );
+
+  //조회수 반영
+  const retaurantViewResult = await restaurantService.addRestaurantViews(
+    restaurantIdx
+  );
+  return res.send(response(baseResponse.SUCCESS, restaurantResult));
+};

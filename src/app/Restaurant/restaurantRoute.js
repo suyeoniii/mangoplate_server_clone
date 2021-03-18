@@ -3,4 +3,6 @@ module.exports = function (app) {
   const jwtMiddleware = require("../../../config/jwtMiddleware");
 
   app.get("/app/restaurants", restaurant.getRestaurants);
+
+  app.get("/app/restaurants/:restaurantIdx", restaurant.getRestaurantsById);
 };

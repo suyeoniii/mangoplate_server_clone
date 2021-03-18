@@ -174,6 +174,11 @@ module.exports = {
     code: 2030,
     message: "현재 위치의 지역정보를 받아오는데 실패했습니다",
   },
+  RESTAURANT_ID_EMPTY: {
+    isSuccess: false,
+    code: 2031,
+    message: "맛집 식별자를 입력해주세요",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,
@@ -210,7 +215,7 @@ module.exports = {
     code: 3007,
     message: "이메일 인증이 완료되지 않았습니다",
   },
-  USER_NOT_EXIST: {
+  USER_ID_NOT_EXIST: {
     isSuccess: false,
     code: 3008,
     message: "존재하지 않는 userIdx 입니다",
@@ -219,6 +224,11 @@ module.exports = {
     isSuccess: false,
     code: 3009,
     message: "로그인 되어있지 않습니다",
+  },
+  RESTAURANT_ID_NOT_EXIST: {
+    isSuccess: false,
+    code: 3010,
+    message: "존재하지 않는 restaurantIdx입니다",
   },
   //Connection, Transaction 등의 서버 오류
   DB_ERROR: { isSuccess: false, code: 4000, message: "데이터 베이스 에러" },

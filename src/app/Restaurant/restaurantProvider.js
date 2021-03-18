@@ -46,3 +46,31 @@ exports.retrieveRestaurantList = async function (
   connection.release();
   return restaurantListResult;
 };
+
+exports.retrieveRestaurant = async function (userIdx, restaurantIdx) {
+  if (userIdx) {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const userIdCheckResult = await userDao.selectUserId(connection, userIdx);
+    connection.release();
+
+    if (userIdCheckResult.length < 1)
+      return errResponse(baseResponse.USER_ID_NOT_EXIST);
+  }
+  const connection = await pool.getConnection(async (conn) => conn);
+  const restaurantResult = await restaurantDao.selectRestaurant(
+    connection,
+    userIdx,
+    restaurantIdx
+  );
+  connection.release();
+  return restaurantResult;
+};
+exports.restaurantCheck = async function (restaurantIdx) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const restaurantResult = await restaurantDao.selectRestaurantId(
+    connection,
+    restaurantIdx
+  );
+  connection.release();
+  return restaurantResult;
+};
