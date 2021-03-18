@@ -188,3 +188,28 @@ exports.getRestaurantsById = async function (req, res) {
   );
   return res.send(response(baseResponse.SUCCESS, restaurantResult));
 };
+
+/**
+ * API No.
+ * API Name : 가고싶다 등록, 수정, 삭제
+ * [POST] /app/restaurants/:restaurantIdx/star
+ */
+exports.postStar = async function (req, res) {
+  /**
+   * path variable : restaurantIdx
+   */
+  const userIdFromJWT = req.verifiedToken.userIdx;
+  const restaurantIdx = req.params.restaurantIdx;
+  const { contents, status } = req.body;
+
+  if (!restaurantIdx)
+    return res.send(response(baseResponse.RESTAURANT_ID_EMPTY));
+
+  const postStarResponse = await restaurantService.updateStars(
+    userIdFromJWT,
+    restaurantIdx,
+    contents,
+    status
+  );
+  return res.send(postStarResponse);
+};
