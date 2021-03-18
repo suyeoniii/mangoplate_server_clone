@@ -179,6 +179,11 @@ module.exports = {
     code: 2031,
     message: "맛집 식별자를 입력해주세요",
   },
+  RESTAURANT_DISTANCE_ERROR_TYPE: {
+    isSuccess: false,
+    code: 2032,
+    message: "거리범위 값이 잘못되었습니다",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,

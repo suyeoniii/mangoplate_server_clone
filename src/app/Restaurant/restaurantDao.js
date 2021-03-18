@@ -11,7 +11,8 @@ async function selectRestaurantList(
   page,
   limit,
   lat,
-  long
+  long,
+  distance
 ) {
   var selectRestaurantListQuery = `
   select Res.idx,imgUrl, restaurantName, area, views, reviews, score`;
@@ -44,7 +45,12 @@ async function selectRestaurantList(
     selectRestaurantListQuery += ` inner join (SELECT idx,
     Round((6371*acos(cos(radians(${lat}))*cos(radians(lati))*cos(radians(longi)
     -radians(${long}))+sin(radians(${lat}))*sin(radians(lati)))),2)
-    AS distance FROM Restaurant) dis on dis.idx=Res.idx`;
+    AS distance FROM Restaurant`;
+
+    if (distance) {
+      selectRestaurantListQuery += ` HAVING distance <= ${distance}`;
+    }
+    selectRestaurantListQuery += `)dis on dis.idx=Res.idx`;
   }
   if (category == 1) {
     //가고싶다

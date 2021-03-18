@@ -33,8 +33,9 @@ exports.getRestaurants = async function (req, res) {
     limit,
     lat,
     long,
+    distance,
   } = req.query;
-  console.log(typeof lat);
+
   //위치정보 받은 경우
   if (!area && lat && long) {
     //카카오 API 호출
@@ -52,10 +53,7 @@ exports.getRestaurants = async function (req, res) {
         const local = obj.documents[0].region_2depth_name;
         console.log(local);
         //특별시 제거
-        if (parent_area === "서울특별시") {
-          parent_area = "서울 ";
-          area = parent_area + local;
-        } else {
+        if (parent_area !== "서울특별시") {
           //구 제거
           area = "";
           let i = 0;
@@ -119,10 +117,18 @@ exports.getRestaurants = async function (req, res) {
   //카카오 API 사용해야하는 경우 지연시간때문에 3초기다림
   if (lat && long && !area) {
     setTimeout(binding, 1000);
-    console.log("여기");
   } else {
     binding();
   }
+
+  if (distance > 5 || distance < 0)
+    return res.send(response(baseResponse.RESTAURANT_DISTANCE_ERROR_TYPE));
+
+  if (distance == 1) distance = 0.1;
+  else if (distance == 2) distance = 0.3;
+  else if (distance == 3) distance = 0.5;
+  else if (distance == 4) distance = 1;
+  else if (distance == 5) distance = 3;
 
   async function binding() {
     const restaurantListResult = await restaurantProvider.retrieveRestaurantList(
@@ -136,7 +142,8 @@ exports.getRestaurants = async function (req, res) {
       page,
       limit,
       lat,
-      long
+      long,
+      distance
     );
     return res.send(response(baseResponse.SUCCESS, restaurantListResult));
   }
