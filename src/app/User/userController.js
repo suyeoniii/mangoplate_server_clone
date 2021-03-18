@@ -332,3 +332,18 @@ exports.logout = async function (req, res) {
 
   return res.send(logoutResponse);
 };
+
+/**
+ * API No. 마이페이지 조회
+ * [GET] /app/users/:userIdx
+ */
+exports.getUserInfo = async function (req, res) {
+  const userIdx = req.params.userIdx;
+  const userIdFromJWT = req.verifiedToken.userIdx;
+
+  if (userIdx != userIdFromJWT)
+    return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+
+  const getUserResponse = await userProvider.retrieveUserInfo(userIdx);
+  return res.send(response(baseResponse.SUCCESS, getUserResponse));
+};

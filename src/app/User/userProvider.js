@@ -79,3 +79,10 @@ exports.loginCheck = async function (userIdx) {
 
   return loginResult;
 };
+exports.retrieveUserInfo = async function (userIdx) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const userInfoResult = await userDao.selectUserInfo(connection, userIdx);
+  connection.release();
+
+  return userInfoResult[0];
+};

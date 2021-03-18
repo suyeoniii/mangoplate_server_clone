@@ -175,6 +175,23 @@ async function insertLoginUser(connection, updateJwtTokenParams) {
   );
   return insertJwtRow;
 }
+//마이페이지 조회
+async function selectUserInfo(connection, userIdx) {
+  const selectUserInfoQuery = `select U.idx userIdx, U.profileImg, U.nickname,
+  ifnull(follower,0) follower, ifnull(following,0) following, ifnull(reviews,0) reviews, ifnull(visited,0) visited,ifnull(photos,0) photos, ifnull(star,0) star
+from User U
+left outer join (select count(*) follower ,followIdx from Follow where status=0 group by followIdx) Fer on Fer.followIdx=U.idx
+left outer join (select count(*) following ,followerIdx from Follow where status=0 group by followerIdx) Fin on Fin.followerIdx=U.idx
+left outer join (select Rev.userIdx,count(*) reviews from Review Rev where Rev.status=0 group by Rev.userIdx) R on R.userIdx=U.idx
+left outer join (select VI.userIdx,count(*) visited from Visited VI where VI.status=0 group by VI.userIdx) V on V.userIdx=U.idx
+left outer join (select Rev.userIdx,count(*) photos from ReviewImg RI inner join Review Rev on RI.reviewIdx=Rev.idx where RI.status=0 AND Rev.status=0 group by Rev.userIdx) RR on RR.userIdx=U.idx
+left outer join (select ST.userIdx,count(*) star from Star ST where ST.status=0 group by ST.userIdx) S on S.userIdx=U.idx where U.idx=?`;
+  const selectUserInfoRow = await connection.query(
+    selectUserInfoQuery,
+    userIdx
+  );
+  return selectUserInfoRow;
+}
 
 module.exports = {
   selectUser,
@@ -193,4 +210,5 @@ module.exports = {
   updateJwtToken,
   selectLoginUser,
   insertLoginUser,
+  selectUserInfo,
 };
