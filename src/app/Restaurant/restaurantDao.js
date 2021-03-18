@@ -34,10 +34,6 @@ async function selectRestaurantList(
   end as new_score, Rev.idx idx
   from Review Rev) as Score on Score.idx=Rev.idx
   group by Rev.restaurantIdx) as new_Rev on new_Rev.resIdx = Res.idx
-  inner join (select count(*) as views, Res.idx idx from Viewed VI
-      inner join Restaurant Res
-  where VI.restaurantIdx = Res.idx
-  group by Res.idx) VIs on VIs.idx=Res.idx
   inner join (select imgUrl imgUrl, Res.idx idx
   from ReviewImg RI
       inner join Review Rev on Rev.idx=RI.reviewIdx
