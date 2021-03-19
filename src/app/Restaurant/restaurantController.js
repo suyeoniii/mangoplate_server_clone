@@ -241,3 +241,50 @@ exports.postVisited = async function (req, res) {
   );
   return res.send(postVisitedResponse);
 };
+
+/**
+ * API No.
+ * API Name : 가봤어요 수정
+ * [PATCH] /app/restaurants/visited/:visitedIdx
+ */
+exports.patchVisited = async function (req, res) {
+  /**
+   * path variable : visitedIdx
+   * Body : contents, isPrivate
+   */
+  const userIdFromJWT = req.verifiedToken.userIdx;
+  const visitedIdx = req.params.visitedIdx;
+  const contents = req.body.contents;
+  var isPrivate = req.body.isPrivate;
+
+  if (!visitedIdx) return res.send(response(baseResponse.VISITED_ID_EMPTY));
+  if (!isPrivate) isPrivate = 0;
+
+  const patchVisitedResponse = await restaurantService.updateVisited(
+    userIdFromJWT,
+    visitedIdx,
+    contents,
+    isPrivate
+  );
+  return res.send(patchVisitedResponse);
+};
+/**
+ * API No.
+ * API Name : 가봤어요 삭제
+ * [PATCH] /app/restaurants/visited/:visitedIdx/status
+ */
+exports.patchVisitedStatus = async function (req, res) {
+  /**
+   * path variable : visitedIdx
+   */
+  const userIdFromJWT = req.verifiedToken.userIdx;
+  const visitedIdx = req.params.visitedIdx;
+
+  if (!visitedIdx) return res.send(response(baseResponse.VISITED_ID_EMPTY));
+
+  const patchVisitedResponse = await restaurantService.updateVisitedStatus(
+    userIdFromJWT,
+    visitedIdx
+  );
+  return res.send(patchVisitedResponse);
+};

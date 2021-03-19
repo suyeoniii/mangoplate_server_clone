@@ -157,12 +157,74 @@ exports.createVisited = async function (
       isStar
     );
     connection.release();
-    console.log(visitedResult);
     return response(baseResponse.SUCCESS, {
       visitedIdx: visitedResult.insertId,
     });
   } catch (err) {
     logger.error(`App - createVisited Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};
+//가봤어요 수정
+exports.updateVisited = async function (
+  userIdx,
+  visitedIdx,
+  contents,
+  isPrivate
+) {
+  try {
+    //visited, userIdx 확인
+    const visitedRows = await restaurantProvider.retrieveVisitedById(
+      visitedIdx
+    );
+    if (visitedRows.length < 1)
+      return errResponse(baseResponse.VISITED_ID_NOT_EXIST);
+    if (visitedRows[0].userIdx !== userIdx)
+      return errResponse(baseResponse.VISITED_USER_NOT_MATCH);
+
+    //update
+    const connection = await pool.getConnection(async (conn) => conn);
+    const visitedResult = await restaurantDao.updateVisited(
+      connection,
+      visitedIdx,
+      contents,
+      isPrivate
+    );
+    connection.release();
+
+    return response(baseResponse.SUCCESS, {
+      visitedIdx: visitedIdx,
+    });
+  } catch (err) {
+    logger.error(`App - updateVisited Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};
+//가봤어요 삭제
+exports.updateVisitedStatus = async function (userIdx, visitedIdx) {
+  try {
+    //visited, userIdx 확인
+    const visitedRows = await restaurantProvider.retrieveVisitedById(
+      visitedIdx
+    );
+    if (visitedRows.length < 1)
+      return errResponse(baseResponse.VISITED_ID_NOT_EXIST);
+    if (visitedRows[0].userIdx !== userIdx)
+      return errResponse(baseResponse.VISITED_USER_NOT_MATCH);
+
+    //update
+    const connection = await pool.getConnection(async (conn) => conn);
+    const visitedResult = await restaurantDao.updateVisitedStatus(
+      connection,
+      visitedIdx
+    );
+    connection.release();
+
+    return response(baseResponse.SUCCESS, {
+      visitedIdx: visitedIdx,
+    });
+  } catch (err) {
+    logger.error(`App - updateVisitedStatus Service error\n: ${err.message}`);
     return errResponse(baseResponse.DB_ERROR);
   }
 };

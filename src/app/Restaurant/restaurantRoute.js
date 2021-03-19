@@ -16,4 +16,15 @@ module.exports = function (app) {
     jwtMiddleware,
     restaurant.postVisited
   );
+  app.patch(
+    "/app/restaurants/visited/:visitedIdx",
+    jwtMiddleware,
+    restaurant.patchVisited
+  );
+  //가봤어요 삭제
+  app.patch(
+    "/app/restaurants/visited/:visitedIdx/status",
+    jwtMiddleware,
+    restaurant.patchVisitedStatus
+  );
 };

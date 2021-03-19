@@ -88,11 +88,20 @@ exports.retrieveStar = async function (restaurantIdx, userIdx) {
 };
 exports.retrieveVisited = async function (restaurantIdx, userIdx) {
   const connection = await pool.getConnection(async (conn) => conn);
-  const starResult = await restaurantDao.selectVisited(
+  const visitedResult = await restaurantDao.selectVisited(
     connection,
     restaurantIdx,
     userIdx
   );
   connection.release();
-  return starResult;
+  return visitedResult;
+};
+exports.retrieveVisitedById = async function (visited) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const visitedResult = await restaurantDao.selectVisitedById(
+    connection,
+    visited
+  );
+  connection.release();
+  return visitedResult;
 };

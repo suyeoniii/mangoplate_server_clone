@@ -247,7 +247,6 @@ async function selectRestaurantId(connection, restaurantIdx) {
     selectRestaurantIdQuery,
     restaurantIdx
   );
-  console.log(restaurantRows[0]);
   return restaurantRows[0];
 }
 async function updateRestaurantViews(connection, restaurantIdx) {
@@ -316,15 +315,21 @@ async function updateStarStatus(
   return restaurantRows;
 }
 async function selectVisited(connection, restaurantIdx, userIdx) {
-  const selectStarQuery = `select count(case when TIMESTAMPDIFF(Hour, createdAt, current_timestamp()) < 24
+  const selectVisitedQuery = `select count(case when TIMESTAMPDIFF(Hour, createdAt, current_timestamp()) < 24
   then 1
 end)  as isCreated from Visited where restaurantIdx=? and userIdx=? and status=0;`;
 
-  const restaurantRows = await connection.query(selectStarQuery, [
+  const restaurantRows = await connection.query(selectVisitedQuery, [
     restaurantIdx,
     userIdx,
   ]);
   return restaurantRows[0];
+}
+async function selectVisitedById(connection, visited) {
+  const selectVisitedQuery = `select idx, userIdx from Visited where idx=? and status=0;`;
+
+  const visitedRows = await connection.query(selectVisitedQuery, [visited]);
+  return visitedRows[0];
 }
 async function insertVisited(
   connection,
@@ -361,6 +366,22 @@ async function insertVisited(
     await connection.rollback();
   }
 }
+async function updateVisited(connection, visitedIdx, contents, isPrivate) {
+  const updateVisitedQuery = `UPDATE Visited SET contents=?, isPrivate=? where idx=?`;
+
+  const visitedRows = await connection.query(updateVisitedQuery, [
+    contents,
+    isPrivate,
+    visitedIdx,
+  ]);
+  return visitedRows[0];
+}
+async function updateVisitedStatus(connection, visitedIdx) {
+  const updateVisitedQuery = `UPDATE Visited SET status=1 where idx=?`;
+
+  const visitedRows = await connection.query(updateVisitedQuery, [visitedIdx]);
+  return visitedRows[0];
+}
 module.exports = {
   selectRestaurantList,
   selectRestaurant,
@@ -372,4 +393,7 @@ module.exports = {
   updateStarStatus,
   selectVisited,
   insertVisited,
+  selectVisitedById,
+  updateVisited,
+  updateVisitedStatus,
 };

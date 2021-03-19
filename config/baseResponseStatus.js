@@ -184,6 +184,11 @@ module.exports = {
     code: 2032,
     message: "거리범위 값이 잘못되었습니다",
   },
+  VISITED_ID_EMPTY: {
+    isSuccess: false,
+    code: 2033,
+    message: "가봤어요 식별자를 입력해주세요",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,
@@ -239,6 +244,16 @@ module.exports = {
     isSuccess: false,
     code: 3011,
     message: "같은식당은 하루 한번만 등록가능합니다",
+  },
+  VISITED_ID_NOT_EXIST: {
+    isSuccess: false,
+    code: 3012,
+    message: "존재하지 않는 visitedIdx 입니다",
+  },
+  VISITED_USER_NOT_MATCH: {
+    isSuccess: false,
+    code: 3013,
+    message: "해당유저의 가봤어요가 아닙니다",
   },
   //Connection, Transaction 등의 서버 오류
   DB_ERROR: { isSuccess: false, code: 4000, message: "데이터 베이스 에러" },
