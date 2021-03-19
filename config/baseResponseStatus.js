@@ -189,6 +189,11 @@ module.exports = {
     code: 2033,
     message: "가봤어요 식별자를 입력해주세요",
   },
+  REVIEW_ID_EMPTY: {
+    isSuccess: false,
+    code: 2034,
+    message: "리뷰 식별자를 입력해주세요",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,
