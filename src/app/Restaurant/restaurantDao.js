@@ -356,7 +356,6 @@ async function insertVisited(
   try {
     //가봤어요 추가
     const insertVisitedQuery = `INSERT INTO Visited(userIdx,restaurantIdx,contents,isPrivate) VALUES(?,?,?,?)`;
-    cons = `INSERT INTO Visited(userIdx,restaurantIdx,contents,isPrivate) VALUES(?,?,?,?)`;
     await connection.beginTransaction();
 
     const restaurantRows = await connection.query(insertVisitedQuery, [

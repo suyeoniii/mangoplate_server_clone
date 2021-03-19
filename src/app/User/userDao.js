@@ -47,7 +47,7 @@ async function selectUserId(connection, userId) {
   const selectUserIdQuery = `
                  SELECT idx, userEmail, nickname, status
                  FROM User 
-                 WHERE idx = ?;
+                 WHERE idx = ? and status=0;
                  `;
   const [userRow] = await connection.query(selectUserIdQuery, userId);
   return userRow;

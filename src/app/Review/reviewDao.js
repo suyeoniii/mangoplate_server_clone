@@ -59,34 +59,39 @@ where reviewIdx=?;`;
 async function insertReview(
   connection,
   userIdx,
-  reviewIdx,
-  contents,
-  isPrivate,
-  isStar
+  restaurantIdx,
+  img,
+  score,
+  contents
 ) {
   try {
-    const insertReviewQuery = `INSERT INTO Review(userIdx,reviewIdx,contents,isPrivate) VALUES(?,?,?,?)`;
-    cons = `INSERT INTO Review(userIdx,reviewIdx,contents,isPrivate) VALUES(?,?,?,?)`;
-    await connection.beginTransaction();
+    const insertReviewQuery = `INSERT INTO Review(userIdx,restaurantIdx,score,contents) VALUES(?,?,?,?);`;
+    const lastInsertIdQuery = `select LAST_INSERT_ID() idx;`;
+    const insertReviewImgQuery = `INSERT INTO ReviewImg(reviewIdx, imgUrl) VALUES(?, ?);`;
 
+    await connection.beginTransaction();
     const reviewRows = await connection.query(insertReviewQuery, [
       userIdx,
-      reviewIdx,
+      restaurantIdx,
+      score,
       contents,
-      isPrivate,
     ]);
-    if (isStar) {
-      //가고싶다 삭제
-      const updateStarQuery = `UPDATE Star SET status=1 WHERE userIdx=? and reviewIdx=?`;
-      const starsRows = await connection.query(updateStarQuery, [
-        userIdx,
-        reviewIdx,
-      ]);
+
+    const reviewIdx = await connection.query(lastInsertIdQuery);
+
+    if (img) {
+      for (i in img) {
+        const reviewImgRows = await connection.query(insertReviewImgQuery, [
+          reviewIdx[0][0].idx,
+          img[i].imgUrl,
+        ]);
+      }
     }
 
     await connection.commit();
     return reviewRows[0];
   } catch (err) {
+    console.error(err);
     await connection.rollback();
   }
 }
@@ -108,4 +113,5 @@ async function updateReviewStatus(connection, reviewIdx) {
 }
 module.exports = {
   selectReviewById,
+  insertReview,
 };

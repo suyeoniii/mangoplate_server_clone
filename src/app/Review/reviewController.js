@@ -71,10 +71,46 @@ exports.postStar = async function (req, res) {
 
 /**
  * API No.
- * API Name : 가봤어요 등록
- * [POST] /app/reviews/:reviewIdx/visited
+ * API Name : 리뷰 등록
+ * [POST] /app/reviews
  */
-exports.postVisited = async function (req, res) {
+exports.postReview = async function (req, res) {
+  /**
+   * Body : restaurantIdx, imgUrl, score, contents
+   */
+  const userIdFromJWT = req.verifiedToken.userIdx;
+
+  const { restaurantIdx, img, contents } = req.body;
+  var score = req.body.score;
+
+  if (!restaurantIdx)
+    return res.send(response(baseResponse.RESTAURANT_ID_EMPTY));
+  if (!score) score = 0;
+  if (!contents) return res.send(response(baseResponse.REVIEW_CONTENTS_EMPTY));
+
+  if (score < 0 || score > 2)
+    return res.send(response(baseResponse.REVIEW_SCORE_ERROR_TYPE));
+  if (contents.length > 10000)
+    return res.send(response(baseResponse.REVIEW_CONTENTS_LENGTH));
+  if (img && img.length > 30)
+    return res.send(response(baseResponse.REVIEW_IMAGE_LENGTH));
+
+  const postReviewResponse = await reviewService.createReview(
+    userIdFromJWT,
+    restaurantIdx,
+    img,
+    score,
+    contents
+  );
+  return res.send(postReviewResponse);
+};
+
+/**
+ * API No.
+ * API Name : 가봤어요 수정
+ * [PATCH] /app/reviews/review/:reviewIdx
+ */
+exports.patchReview = async function (req, res) {
   /**
    * path variable : reviewIdx
    * Body : contents, isPrivate
@@ -84,61 +120,34 @@ exports.postVisited = async function (req, res) {
   const contents = req.body.contents;
   var isPrivate = req.body.isPrivate;
 
-  if (!reviewIdx) return res.send(response(baseResponse.RESTAURANT_ID_EMPTY));
+  if (!reviewIdx) return res.send(response(baseResponse.VISITED_ID_EMPTY));
   if (!isPrivate) isPrivate = 0;
 
-  const postVisitedResponse = await reviewService.createVisited(
+  const patchReviewResponse = await reviewService.updateReview(
     userIdFromJWT,
     reviewIdx,
     contents,
     isPrivate
   );
-  return res.send(postVisitedResponse);
-};
-
-/**
- * API No.
- * API Name : 가봤어요 수정
- * [PATCH] /app/reviews/visited/:visitedIdx
- */
-exports.patchVisited = async function (req, res) {
-  /**
-   * path variable : visitedIdx
-   * Body : contents, isPrivate
-   */
-  const userIdFromJWT = req.verifiedToken.userIdx;
-  const visitedIdx = req.params.visitedIdx;
-  const contents = req.body.contents;
-  var isPrivate = req.body.isPrivate;
-
-  if (!visitedIdx) return res.send(response(baseResponse.VISITED_ID_EMPTY));
-  if (!isPrivate) isPrivate = 0;
-
-  const patchVisitedResponse = await reviewService.updateVisited(
-    userIdFromJWT,
-    visitedIdx,
-    contents,
-    isPrivate
-  );
-  return res.send(patchVisitedResponse);
+  return res.send(patchReviewResponse);
 };
 /**
  * API No.
  * API Name : 가봤어요 삭제
- * [PATCH] /app/reviews/visited/:visitedIdx/status
+ * [PATCH] /app/reviews/review/:reviewIdx/status
  */
-exports.patchVisitedStatus = async function (req, res) {
+exports.patchReviewStatus = async function (req, res) {
   /**
-   * path variable : visitedIdx
+   * path variable : reviewIdx
    */
   const userIdFromJWT = req.verifiedToken.userIdx;
-  const visitedIdx = req.params.visitedIdx;
+  const reviewIdx = req.params.reviewIdx;
 
-  if (!visitedIdx) return res.send(response(baseResponse.VISITED_ID_EMPTY));
+  if (!reviewIdx) return res.send(response(baseResponse.VISITED_ID_EMPTY));
 
-  const patchVisitedResponse = await reviewService.updateVisitedStatus(
+  const patchReviewResponse = await reviewService.updateReviewStatus(
     userIdFromJWT,
-    visitedIdx
+    reviewIdx
   );
-  return res.send(patchVisitedResponse);
+  return res.send(patchReviewResponse);
 };

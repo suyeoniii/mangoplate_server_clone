@@ -4,9 +4,5 @@ module.exports = function (app) {
 
   app.get("/app/reviews/:reviewIdx", review.getReviewById);
 
-  /*app.post(
-    "/app/reviews/:reviewIdx/star",
-    jwtMiddleware,
-    review.postStar
-  );*/
+  app.post("/app/reviews", jwtMiddleware, review.postReview);
 };

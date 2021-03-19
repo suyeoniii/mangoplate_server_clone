@@ -194,6 +194,26 @@ module.exports = {
     code: 2034,
     message: "리뷰 식별자를 입력해주세요",
   },
+  REVIEW_CONTENTS_EMPTY: {
+    isSuccess: false,
+    code: 2035,
+    message: "리뷰 내용을 입력해주세요",
+  },
+  REVIEW_SCORE_ERROR_TYPE: {
+    isSuccess: false,
+    code: 2036,
+    message: "만족도 값이 잘못되었습니다",
+  },
+  REVIEW_CONTENTS_LENGTH: {
+    isSuccess: false,
+    code: 2037,
+    message: "리뷰는 최대 10000자 입니다",
+  },
+  REVIEW_IMAGE_LENGTH: {
+    isSuccess: false,
+    code: 2038,
+    message: "리뷰이미지는 최대 30장입니다",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,
