@@ -152,13 +152,15 @@ exports.patchReviewStatus = async function (req, res) {
    * path variable : reviewIdx
    */
   const userIdFromJWT = req.verifiedToken.userIdx;
+
   const reviewIdx = req.params.reviewIdx;
 
-  if (!reviewIdx) return res.send(response(baseResponse.VISITED_ID_EMPTY));
+  if (!reviewIdx) return res.send(response(baseResponse.REVIEW_ID_EMPTY));
 
   const patchReviewResponse = await reviewService.updateReviewStatus(
     userIdFromJWT,
     reviewIdx
   );
+
   return res.send(patchReviewResponse);
 };

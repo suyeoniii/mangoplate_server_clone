@@ -12,5 +12,9 @@ module.exports = function (app) {
   app.patch("/app/reviews/:reviewIdx", jwtMiddleware, review.patchReview);
 
   //리뷰 삭제 API
-  //app.patch("/app/reviews/:reviewIdx", jwtMiddleware, review.patchReviewStatus);
+  app.patch(
+    "/app/reviews/:reviewIdx/status",
+    jwtMiddleware,
+    review.patchReviewStatus
+  );
 };

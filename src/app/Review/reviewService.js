@@ -91,7 +91,38 @@ exports.updateReview = async function (
     });
   } catch (err) {
     console.log(err);
-    logger.error(`App - createReview Service error\n: ${err.message}`);
+    logger.error(`App - updateReview Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};
+//리뷰 삭제
+exports.updateReviewStatus = async function (userIdx, reviewIdx) {
+  try {
+    //userIdx 확인
+    const userRows = await userProvider.retrieveUser(userIdx);
+    if (userRows.length < 1) return errResponse(baseResponse.USER_ID_NOT_EXIST);
+
+    //reviewIdx 확인
+    const reviewIdxRows = await reviewProvider.reviewCheck(reviewIdx);
+    if (reviewIdxRows.length < 1)
+      return errResponse(baseResponse.REVIEW_ID_NOT_EXIST);
+    if (reviewIdxRows.userIdx < 1)
+      return errResponse(baseResponse.REVIEW_USER_NOT_MATCH);
+
+    //update
+    const connection = await pool.getConnection(async (conn) => conn);
+    const reviewResult = await reviewDao.updateReviewStatus(
+      connection,
+      userIdx,
+      reviewIdx
+    );
+    connection.release();
+
+    return response(baseResponse.SUCCESS, {
+      reviewIdx: reviewIdx,
+    });
+  } catch (err) {
+    logger.error(`App - updateReviewStatus Service error\n: ${err.message}`);
     return errResponse(baseResponse.DB_ERROR);
   }
 };

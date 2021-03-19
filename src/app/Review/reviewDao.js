@@ -96,7 +96,7 @@ async function insertReview(
   }
 }
 async function selectReviewId(connection, reviewIdx) {
-  const selectReviewQuery = `select idx, userIdx from Review where idx=?`;
+  const selectReviewQuery = `select idx, userIdx from Review where idx=? and status=0`;
 
   const reviewRows = await connection.query(selectReviewQuery, [reviewIdx]);
   return reviewRows[0];
@@ -147,4 +147,5 @@ module.exports = {
   insertReview,
   selectReviewId,
   updateReview,
+  updateReviewStatus,
 };
