@@ -14,3 +14,9 @@ exports.retrieveReviewById = async function (reviewIdx, userIdx) {
   connection.release();
   return reviewResult;
 };
+exports.reviewCheck = async function (reviewIdx) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const reviewResult = await reviewDao.selectReviewId(connection, reviewIdx);
+  connection.release();
+  return reviewResult;
+};

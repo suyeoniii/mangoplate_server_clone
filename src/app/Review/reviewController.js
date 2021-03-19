@@ -107,33 +107,44 @@ exports.postReview = async function (req, res) {
 
 /**
  * API No.
- * API Name : 가봤어요 수정
+ * API Name : 리뷰 수정
  * [PATCH] /app/reviews/review/:reviewIdx
  */
 exports.patchReview = async function (req, res) {
   /**
    * path variable : reviewIdx
-   * Body : contents, isPrivate
+   * Body : imgUrl, score, contents
    */
   const userIdFromJWT = req.verifiedToken.userIdx;
-  const reviewIdx = req.params.reviewIdx;
-  const contents = req.body.contents;
-  var isPrivate = req.body.isPrivate;
 
-  if (!reviewIdx) return res.send(response(baseResponse.VISITED_ID_EMPTY));
-  if (!isPrivate) isPrivate = 0;
+  const reviewIdx = req.params.reviewIdx;
+  const { img, contents } = req.body;
+  var score = req.body.score;
+
+  if (!reviewIdx) return res.send(response(baseResponse.REVIEW_ID_EMPTY));
+  if (!score) score = 0;
+  if (!contents) return res.send(response(baseResponse.REVIEW_CONTENTS_EMPTY));
+
+  if (score < 0 || score > 2)
+    return res.send(response(baseResponse.REVIEW_SCORE_ERROR_TYPE));
+  if (contents.length > 10000)
+    return res.send(response(baseResponse.REVIEW_CONTENTS_LENGTH));
+  if (img && img.length > 30)
+    return res.send(response(baseResponse.REVIEW_IMAGE_LENGTH));
 
   const patchReviewResponse = await reviewService.updateReview(
     userIdFromJWT,
     reviewIdx,
-    contents,
-    isPrivate
+    img,
+    score,
+    contents
   );
+
   return res.send(patchReviewResponse);
 };
 /**
  * API No.
- * API Name : 가봤어요 삭제
+ * API Name : 리뷰 삭제
  * [PATCH] /app/reviews/review/:reviewIdx/status
  */
 exports.patchReviewStatus = async function (req, res) {

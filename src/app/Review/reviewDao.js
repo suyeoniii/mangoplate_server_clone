@@ -95,16 +95,47 @@ async function insertReview(
     await connection.rollback();
   }
 }
-async function updateReview(connection, reviewIdx, contents, isPrivate) {
-  const updateReviewQuery = `UPDATE Review SET contents=?, isPrivate=? where idx=?`;
+async function selectReviewId(connection, reviewIdx) {
+  const selectReviewQuery = `select idx, userIdx from Review where idx=?`;
 
-  const reviewRows = await connection.query(updateReviewQuery, [
-    contents,
-    isPrivate,
-    reviewIdx,
-  ]);
+  const reviewRows = await connection.query(selectReviewQuery, [reviewIdx]);
   return reviewRows[0];
 }
+async function updateReview(
+  connection,
+  userIdx,
+  reviewIdx,
+  img,
+  score,
+  contents
+) {
+  try {
+    const updateReviewQuery = `UPDATE Review SET score=?,contents=? where idx=?;`;
+    const updateReviewImgQuery = `UPDATE ReviewImg SET imgUrl = ? where reviewIdx=?;`;
+
+    await connection.beginTransaction();
+    const reviewRows = await connection.query(updateReviewQuery, [
+      score,
+      contents,
+      reviewIdx,
+    ]);
+
+    if (img) {
+      for (i in img) {
+        const reviewImgRows = await connection.query(updateReviewImgQuery, [
+          img[i].imgUrl,
+          reviewIdx,
+        ]);
+      }
+    }
+    await connection.commit();
+    return reviewRows[0];
+  } catch (err) {
+    console.error(err);
+    await connection.rollback();
+  }
+}
+
 async function updateReviewStatus(connection, reviewIdx) {
   const updateReviewQuery = `UPDATE Review SET status=1 where idx=?`;
 
@@ -114,4 +145,6 @@ async function updateReviewStatus(connection, reviewIdx) {
 module.exports = {
   selectReviewById,
   insertReview,
+  selectReviewId,
+  updateReview,
 };

@@ -280,6 +280,16 @@ module.exports = {
     code: 3013,
     message: "해당유저의 가봤어요가 아닙니다",
   },
+  REVIEW_ID_NOT_EXIST: {
+    isSuccess: false,
+    code: 3014,
+    message: "존재하지 않는 reviewIdx입니다",
+  },
+  REVIEW_USER_NOT_MATCH: {
+    isSuccess: false,
+    code: 3015,
+    message: "리뷰 작성자 idx와 로그인유저의 idx가 일치하지 않습니다",
+  },
   //Connection, Transaction 등의 서버 오류
   DB_ERROR: { isSuccess: false, code: 4000, message: "데이터 베이스 에러" },
   SERVER_ERROR: { isSuccess: false, code: 4001, message: "서버 에러" },
