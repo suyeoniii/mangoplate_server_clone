@@ -11,4 +11,9 @@ module.exports = function (app) {
     jwtMiddleware,
     restaurant.postStar
   );
+  app.post(
+    "/app/restaurants/:restaurantIdx/visited",
+    jwtMiddleware,
+    restaurant.postVisited
+  );
 };

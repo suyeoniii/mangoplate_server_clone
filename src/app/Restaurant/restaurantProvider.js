@@ -86,3 +86,13 @@ exports.retrieveStar = async function (restaurantIdx, userIdx) {
   connection.release();
   return starResult;
 };
+exports.retrieveVisited = async function (restaurantIdx, userIdx) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const starResult = await restaurantDao.selectVisited(
+    connection,
+    restaurantIdx,
+    userIdx
+  );
+  connection.release();
+  return starResult;
+};

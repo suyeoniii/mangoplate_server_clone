@@ -235,6 +235,11 @@ module.exports = {
     code: 3010,
     message: "존재하지 않는 restaurantIdx입니다",
   },
+  VISITED_LIMIT_EXCEEDED: {
+    isSuccess: false,
+    code: 3011,
+    message: "같은식당은 하루 한번만 등록가능합니다",
+  },
   //Connection, Transaction 등의 서버 오류
   DB_ERROR: { isSuccess: false, code: 4000, message: "데이터 베이스 에러" },
   SERVER_ERROR: { isSuccess: false, code: 4001, message: "서버 에러" },

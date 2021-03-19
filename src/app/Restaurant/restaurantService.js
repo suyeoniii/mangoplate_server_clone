@@ -109,3 +109,60 @@ exports.updateStars = async function (
     return errResponse(baseResponse.DB_ERROR);
   }
 };
+//가봤어요 등록
+exports.createVisited = async function (
+  userIdx,
+  restaurantIdx,
+  contents,
+  isPrivate
+) {
+  try {
+    //userIdx 확인
+    const userRows = await userProvider.retrieveUser(userIdx);
+    if (userRows.length < 1) return errResponse(baseResponse.USER_ID_NOT_EXIST);
+
+    //restaurantIdx 확인
+    const restaurantRows = await restaurantProvider.restaurantCheck(
+      restaurantIdx
+    );
+    if (restaurantRows.length < 1)
+      return errResponse(baseResponse.RESTAURANT_ID_NOT_EXIST);
+
+    //visited 테이블 확인 - 하루안에 등록한게 있으면 등록못함
+    const visitedRows = await restaurantProvider.retrieveVisited(
+      restaurantIdx,
+      userIdx
+    );
+
+    if (visitedRows.length > 0 && visitedRows[0].isCreated > 0)
+      return errResponse(baseResponse.VISITED_LIMIT_EXCEEDED);
+
+    //star 테이블 확인 - 있으면 삭제해야해서
+    const starRows = await restaurantProvider.retrieveStar(
+      restaurantIdx,
+      userIdx
+    );
+    var isStar = 0;
+
+    if (starRows.length > 0 && starRows[0].idx > 0) isStar = 1;
+
+    //insert
+    const connection = await pool.getConnection(async (conn) => conn);
+    const visitedResult = await restaurantDao.insertVisited(
+      connection,
+      userIdx,
+      restaurantIdx,
+      contents,
+      isPrivate,
+      isStar
+    );
+    connection.release();
+    console.log(visitedResult);
+    return response(baseResponse.SUCCESS, {
+      visitedIdx: visitedResult.insertId,
+    });
+  } catch (err) {
+    logger.error(`App - createVisited Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};

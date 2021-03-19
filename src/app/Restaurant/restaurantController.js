@@ -213,3 +213,31 @@ exports.postStar = async function (req, res) {
   );
   return res.send(postStarResponse);
 };
+
+/**
+ * API No.
+ * API Name : 가봤어요 등록
+ * [POST] /app/restaurants/:restaurantIdx/visited
+ */
+exports.postVisited = async function (req, res) {
+  /**
+   * path variable : restaurantIdx
+   * Body : contents, isPrivate
+   */
+  const userIdFromJWT = req.verifiedToken.userIdx;
+  const restaurantIdx = req.params.restaurantIdx;
+  const contents = req.body.contents;
+  var isPrivate = req.body.isPrivate;
+
+  if (!restaurantIdx)
+    return res.send(response(baseResponse.RESTAURANT_ID_EMPTY));
+  if (!isPrivate) isPrivate = 0;
+
+  const postVisitedResponse = await restaurantService.createVisited(
+    userIdFromJWT,
+    restaurantIdx,
+    contents,
+    isPrivate
+  );
+  return res.send(postVisitedResponse);
+};

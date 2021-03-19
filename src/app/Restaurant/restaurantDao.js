@@ -315,6 +315,52 @@ async function updateStarStatus(
   ]);
   return restaurantRows;
 }
+async function selectVisited(connection, restaurantIdx, userIdx) {
+  const selectStarQuery = `select count(case when TIMESTAMPDIFF(Hour, createdAt, current_timestamp()) < 24
+  then 1
+end)  as isCreated from Visited where restaurantIdx=? and userIdx=? and status=0;`;
+
+  const restaurantRows = await connection.query(selectStarQuery, [
+    restaurantIdx,
+    userIdx,
+  ]);
+  return restaurantRows[0];
+}
+async function insertVisited(
+  connection,
+  userIdx,
+  restaurantIdx,
+  contents,
+  isPrivate,
+  isStar
+) {
+  try {
+    //가봤어요 추가
+    const insertVisitedQuery = `INSERT INTO Visited(userIdx,restaurantIdx,contents,isPrivate) VALUES(?,?,?,?)`;
+    cons = `INSERT INTO Visited(userIdx,restaurantIdx,contents,isPrivate) VALUES(?,?,?,?)`;
+    await connection.beginTransaction();
+
+    const restaurantRows = await connection.query(insertVisitedQuery, [
+      userIdx,
+      restaurantIdx,
+      contents,
+      isPrivate,
+    ]);
+    if (isStar) {
+      //가고싶다 삭제
+      const updateStarQuery = `UPDATE Star SET status=1 WHERE userIdx=? and restaurantIdx=?`;
+      const starsRows = await connection.query(updateStarQuery, [
+        userIdx,
+        restaurantIdx,
+      ]);
+    }
+
+    await connection.commit();
+    return restaurantRows[0];
+  } catch (err) {
+    await connection.rollback();
+  }
+}
 module.exports = {
   selectRestaurantList,
   selectRestaurant,
@@ -324,4 +370,6 @@ module.exports = {
   insertStar,
   updateStarContent,
   updateStarStatus,
+  selectVisited,
+  insertVisited,
 };
