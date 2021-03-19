@@ -182,7 +182,7 @@ module.exports = {
   RESTAURANT_DISTANCE_ERROR_TYPE: {
     isSuccess: false,
     code: 2032,
-    message: "거리범위 값이 잘못되었습니다",
+    message: "검색반경 값이 잘못되었습니다",
   },
   VISITED_ID_EMPTY: {
     isSuccess: false,

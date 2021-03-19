@@ -15,13 +15,17 @@ async function selectRestaurantList(
   distance
 ) {
   var selectRestaurantListQuery = `
-  select Res.idx,imgUrl, restaurantName, area, views, reviews, score`;
+  select Res.idx,imgUrl, restaurantName, area, FORMAT(views, 0) views, reviews, score`;
 
   if (lat && long) {
     selectRestaurantListQuery += `,case when distance < 1
   then Concat(Round(distance*1000,0),'m')
              when distance >=1 then Concat(distance,'km')
   end as distance`;
+  }
+  console.log(userIdx);
+  if (userIdx) {
+    selectRestaurantListQuery += `,ifnull(isStar, 0) isStar, ifnull(isVisited, 0) isVisited`;
   }
 
   selectRestaurantListQuery += ` from Restaurant Res
@@ -64,6 +68,16 @@ async function selectRestaurantList(
       from Visited V
           inner join Restaurant Res on Res.idx=V.restaurantIdx
       where V.userIdx=${userIdx}) Vi on Vi.idx=Res.idx`;
+  }
+
+  if (userIdx) {
+    selectRestaurantListQuery += `
+    left outer join
+    (select count(*) isStar, restaurantIdx from Star where userIdx=${userIdx} AND status=0 group by restaurantIdx)
+    ST on ST.restaurantIdx=Res.idx
+    left outer join
+          (select count(*) isVisited, restaurantIdx from Visited where userIdx=${userIdx} AND status=0 group by restaurantIdx)
+    VI on VI.restaurantIdx=Res.idx`;
   }
 
   selectRestaurantListQuery += ` where 1`;
@@ -119,13 +133,13 @@ async function selectRestaurantList(
   if (page) {
     selectRestaurantListQuery += ` LIMIT ${limit * (page - 1)},${limit}`;
   }
-
+  console.log(selectRestaurantListQuery);
   const [restaurantRows] = await connection.query(selectRestaurantListQuery);
   return restaurantRows;
 }
 
 async function selectRestaurant(connection, userIdx, restaurantIdx) {
-  var selectRestaurantQuery = `select Res.idx, restaurantName, views, reviews, stars, score`;
+  var selectRestaurantQuery = `select Res.idx, restaurantName, FORMAT(views, 0) views, reviews, stars, score`;
   if (userIdx) {
     selectRestaurantQuery += `,isStar, visited`;
   }
