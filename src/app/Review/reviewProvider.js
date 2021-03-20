@@ -30,3 +30,12 @@ exports.retrieveHeart = async function (reviewIdx, userIdx) {
   connection.release();
   return reviewResult;
 };
+exports.commentCheck = async function (commentIdx) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const commentResult = await reviewDao.selectCommentIdx(
+    connection,
+    commentIdx
+  );
+  connection.release();
+  return commentResult;
+};

@@ -23,10 +23,22 @@ module.exports = function (app) {
     jwtMiddleware,
     review.postReviewLike
   );
-  //리뷰 좋아요
+  //리뷰 댓글 작성 API
   app.post(
     "/app/reviews/:reviewIdx/comment",
     jwtMiddleware,
     review.postReviewComment
+  );
+  //리뷰 댓글 수정 API
+  app.patch(
+    "/app/reviews/comment/:commentIdx",
+    jwtMiddleware,
+    review.patchReviewComment
+  );
+  //리뷰 댓글 삭제 API
+  app.patch(
+    "/app/reviews/comment/:commentIdx/status",
+    jwtMiddleware,
+    review.patchReviewCommentStatus
   );
 };

@@ -222,12 +222,17 @@ module.exports = {
   COMMENT_CONTENTS_EMPTY: {
     isSuccess: false,
     code: 2040,
-    message: "status값이 잘못되었습니다",
+    message: "댓글 내용을 입력해주세요",
   },
   COMMENT_CONTENTS_LENGTH: {
     isSuccess: false,
     code: 2041,
     message: "댓글길이는 최대 100자입니다",
+  },
+  COMMENT_ID_EMPTY: {
+    isSuccess: false,
+    code: 2042,
+    message: "댓글 식별자를 입력해주세요",
   },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
@@ -304,6 +309,16 @@ module.exports = {
     isSuccess: false,
     code: 3015,
     message: "리뷰 작성자 idx와 로그인유저의 idx가 일치하지 않습니다",
+  },
+  COMMENT_ID_NOT_EXIST: {
+    isSuccess: false,
+    code: 3016,
+    message: "존재하지 않는 commentIdx입니다",
+  },
+  COMMENT_USER_NOT_MATCH: {
+    isSuccess: false,
+    code: 3017,
+    message: "댓글 작성자 idx와 로그인유저의 idx가 일치하지 않습니다",
   },
   //Connection, Transaction 등의 서버 오류
   DB_ERROR: { isSuccess: false, code: 4000, message: "데이터 베이스 에러" },

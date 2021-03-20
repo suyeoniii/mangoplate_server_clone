@@ -71,7 +71,7 @@ exports.updateReview = async function (
     const reviewIdxRows = await reviewProvider.reviewCheck(reviewIdx);
     if (reviewIdxRows.length < 1)
       return errResponse(baseResponse.REVIEW_ID_NOT_EXIST);
-    if (reviewIdxRows.userIdx < 1)
+    if (reviewIdxRows[0].userIdx !== userIdx)
       return errResponse(baseResponse.REVIEW_USER_NOT_MATCH);
 
     //update
@@ -106,7 +106,7 @@ exports.updateReviewStatus = async function (userIdx, reviewIdx) {
     const reviewIdxRows = await reviewProvider.reviewCheck(reviewIdx);
     if (reviewIdxRows.length < 1)
       return errResponse(baseResponse.REVIEW_ID_NOT_EXIST);
-    if (reviewIdxRows.userIdx < 1)
+    if (reviewIdxRows[0].userIdx !== userIdx)
       return errResponse(baseResponse.REVIEW_USER_NOT_MATCH);
 
     //update
@@ -198,6 +198,69 @@ exports.createReviewComment = async function (userIdx, reviewIdx, contents) {
     });
   } catch (err) {
     logger.error(`App - createReviewComment Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};
+//리뷰 댓글 수정 API
+exports.updateReviewComment = async function (userIdx, commentIdx, contents) {
+  try {
+    //userIdx 확인
+    const userRows = await userProvider.retrieveUser(userIdx);
+    if (userRows.length < 1) return errResponse(baseResponse.USER_ID_NOT_EXIST);
+
+    //commentIdx 확인
+    const commentIdxRows = await reviewProvider.commentCheck(commentIdx);
+    if (commentIdxRows.length < 1)
+      return errResponse(baseResponse.COMMENT_ID_NOT_EXIST);
+    if (commentIdxRows[0].userIdx !== userIdx)
+      return errResponse(baseResponse.COMMENT_USER_NOT_MATCH);
+
+    //insert
+    const connection = await pool.getConnection(async (conn) => conn);
+    const commentResult = await reviewDao.updateReviewComment(
+      connection,
+      userIdx,
+      commentIdx,
+      contents
+    );
+    connection.release();
+    return response(baseResponse.SUCCESS, {
+      commentIdx: commentIdx,
+    });
+  } catch (err) {
+    logger.error(`App - updateReviewComment Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};
+//리뷰 댓글 삭제 API
+exports.updateReviewCommentStatus = async function (userIdx, commentIdx) {
+  try {
+    //userIdx 확인
+    const userRows = await userProvider.retrieveUser(userIdx);
+    if (userRows.length < 1) return errResponse(baseResponse.USER_ID_NOT_EXIST);
+
+    //commentIdx 확인
+    const commentIdxRows = await reviewProvider.commentCheck(commentIdx);
+    if (commentIdxRows.length < 1)
+      return errResponse(baseResponse.COMMENT_ID_NOT_EXIST);
+    if (commentIdxRows[0].userIdx !== userIdx)
+      return errResponse(baseResponse.COMMENT_USER_NOT_MATCH);
+
+    //update status
+    const connection = await pool.getConnection(async (conn) => conn);
+    const commentResult = await reviewDao.updateReviewCommentStatus(
+      connection,
+      userIdx,
+      commentIdx
+    );
+    connection.release();
+    return response(baseResponse.SUCCESS, {
+      commentIdx: commentIdx,
+    });
+  } catch (err) {
+    logger.error(
+      `App - updateReviewCommentStatus Service error\n: ${err.message}`
+    );
     return errResponse(baseResponse.DB_ERROR);
   }
 };

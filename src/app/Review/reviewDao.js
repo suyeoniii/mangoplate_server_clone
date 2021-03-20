@@ -179,6 +179,31 @@ async function insertReviewComment(connection, userIdx, reviewIdx, contents) {
   ]);
   return reviewRows[0];
 }
+async function selectCommentIdx(connection, commentIdx) {
+  const selectCommentQuery = `select idx, userIdx from Comment where idx=? and status=0`;
+
+  const commentRows = await connection.query(selectCommentQuery, [commentIdx]);
+  return commentRows[0];
+}
+async function updateReviewComment(connection, userIdx, commentIdx, contents) {
+  const updateReviewCommentQuery = `UPDATE Comment SET contents=? WHERE idx=? AND userIdx=?`;
+
+  const reviewRows = await connection.query(updateReviewCommentQuery, [
+    contents,
+    commentIdx,
+    userIdx,
+  ]);
+  return reviewRows[0];
+}
+async function updateReviewCommentStatus(connection, userIdx, commentIdx) {
+  const updateReviewCommentStatusQuery = `UPDATE Comment SET status=1 WHERE idx=? AND userIdx=?`;
+
+  const reviewRows = await connection.query(updateReviewCommentStatusQuery, [
+    commentIdx,
+    userIdx,
+  ]);
+  return reviewRows[0];
+}
 module.exports = {
   selectReviewById,
   insertReview,
@@ -189,4 +214,7 @@ module.exports = {
   insertReviewHeart,
   updateReviewHeart,
   insertReviewComment,
+  selectCommentIdx,
+  updateReviewComment,
+  updateReviewCommentStatus,
 };

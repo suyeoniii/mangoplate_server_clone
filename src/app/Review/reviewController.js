@@ -213,3 +213,52 @@ exports.postReviewComment = async function (req, res) {
 
   return res.send(postReviewCommentResponse);
 };
+
+/**
+ * API No.
+ * API Name : 리뷰 댓글 수정 API
+ * [PATCH] /app/reviews/comment/:commentIdx
+ */
+exports.patchReviewComment = async function (req, res) {
+  /**
+   * path variable : reviewIdx
+   * Body : contents
+   */
+  const userIdFromJWT = req.verifiedToken.userIdx;
+  const commentIdx = req.params.commentIdx;
+  const contents = req.body.contents;
+
+  if (!commentIdx) return res.send(response(baseResponse.COMMENT_ID_EMPTY));
+  if (!contents) return res.send(response(baseResponse.COMMENT_CONTENTS_EMPTY));
+  if (contents.length > 100)
+    return res.send(response(baseResponse.COMMENT_CONTENTS_LENGTH));
+
+  const patchReviewCommentResponse = await reviewService.updateReviewComment(
+    userIdFromJWT,
+    commentIdx,
+    contents
+  );
+
+  return res.send(patchReviewCommentResponse);
+};
+/**
+ * API No.
+ * API Name : 리뷰 댓글 수정 API
+ * [PATCH] /app/reviews/comment/:commentIdx
+ */
+exports.patchReviewCommentStatus = async function (req, res) {
+  /**
+   * path variable : reviewIdx
+   */
+  const userIdFromJWT = req.verifiedToken.userIdx;
+  const commentIdx = req.params.commentIdx;
+
+  if (!commentIdx) return res.send(response(baseResponse.COMMENT_ID_EMPTY));
+
+  const patchReviewCommentResponse = await reviewService.updateReviewCommentStatus(
+    userIdFromJWT,
+    commentIdx
+  );
+
+  return res.send(patchReviewCommentResponse);
+};
