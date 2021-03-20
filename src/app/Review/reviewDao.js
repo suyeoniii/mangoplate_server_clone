@@ -135,11 +135,38 @@ async function updateReview(
     await connection.rollback();
   }
 }
-
 async function updateReviewStatus(connection, reviewIdx) {
   const updateReviewQuery = `UPDATE Review SET status=1 where idx=?`;
 
   const reviewRows = await connection.query(updateReviewQuery, [reviewIdx]);
+  return reviewRows[0];
+}
+async function selectReviewHeart(connection, reviewIdx, userIdx) {
+  const selectReviewHeartQuery = `SELECT idx, status from Heart where reviewIdx=? AND userIdx=?;`;
+
+  const reviewRows = await connection.query(selectReviewHeartQuery, [
+    reviewIdx,
+    userIdx,
+  ]);
+  return reviewRows[0];
+}
+async function insertReviewHeart(connection, reviewIdx, userIdx) {
+  const insertReviewHeartQuery = `INSERT INTO Heart(reviewIdx, userIdx) VALUES(?,?)`;
+
+  const reviewRows = await connection.query(insertReviewHeartQuery, [
+    reviewIdx,
+    userIdx,
+  ]);
+  return reviewRows[0];
+}
+async function updateReviewHeart(connection, reviewIdx, userIdx, status) {
+  const updateReviewHeartQuery = `UPDATE Heart SET status=? WHERE reviewIdx=? AND userIdx=?`;
+
+  const reviewRows = await connection.query(updateReviewHeartQuery, [
+    status,
+    reviewIdx,
+    userIdx,
+  ]);
   return reviewRows[0];
 }
 module.exports = {
@@ -148,4 +175,7 @@ module.exports = {
   selectReviewId,
   updateReview,
   updateReviewStatus,
+  selectReviewHeart,
+  insertReviewHeart,
+  updateReviewHeart,
 };

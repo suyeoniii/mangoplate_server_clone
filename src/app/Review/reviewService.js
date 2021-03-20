@@ -126,3 +126,51 @@ exports.updateReviewStatus = async function (userIdx, reviewIdx) {
     return errResponse(baseResponse.DB_ERROR);
   }
 };
+//리뷰 좋아요 등록,해제
+exports.createReviewLike = async function (userIdx, reviewIdx) {
+  try {
+    //userIdx 확인
+    const userRows = await userProvider.retrieveUser(userIdx);
+    if (userRows.length < 1) return errResponse(baseResponse.USER_ID_NOT_EXIST);
+
+    //reviewIdx 확인
+    const reviewIdxRows = await reviewProvider.reviewCheck(reviewIdx);
+    if (reviewIdxRows.length < 1)
+      return errResponse(baseResponse.REVIEW_ID_NOT_EXIST);
+    if (reviewIdxRows.userIdx < 1)
+      return errResponse(baseResponse.REVIEW_USER_NOT_MATCH);
+
+    //heart 테이블 확인
+    const heartRows = await reviewProvider.retrieveHeart(reviewIdx, userIdx);
+
+    if (heartRows.length < 1) {
+      //insert
+      const connection = await pool.getConnection(async (conn) => conn);
+      const reviewHeartResult = await reviewDao.insertReviewHeart(
+        connection,
+        reviewIdx,
+        userIdx
+      );
+      connection.release();
+      return response(baseResponse.SUCCESS, {
+        status: 1,
+      });
+    } else {
+      //update
+      var status = 0;
+      if (heartRows[0].status === 0) status = 1;
+      const connection = await pool.getConnection(async (conn) => conn);
+      const reviewHeartResult = await reviewDao.updateReviewHeart(
+        connection,
+        reviewIdx,
+        userIdx,
+        status
+      );
+      connection.release();
+      return response(baseResponse.SUCCESS, { status: status });
+    }
+  } catch (err) {
+    logger.error(`App - createReviewLike Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};

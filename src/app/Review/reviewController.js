@@ -145,7 +145,7 @@ exports.patchReview = async function (req, res) {
 /**
  * API No.
  * API Name : 리뷰 삭제
- * [PATCH] /app/reviews/review/:reviewIdx/status
+ * [PATCH] /app/reviews/:reviewIdx/status
  */
 exports.patchReviewStatus = async function (req, res) {
   /**
@@ -163,4 +163,26 @@ exports.patchReviewStatus = async function (req, res) {
   );
 
   return res.send(patchReviewResponse);
+};
+
+/**
+ * API No.
+ * API Name : 리뷰 좋아요
+ * [POST] /app/reviews/:reviewIdx/like
+ */
+exports.postReviewLike = async function (req, res) {
+  /**
+   * path variable : reviewIdx
+   */
+  const userIdFromJWT = req.verifiedToken.userIdx;
+  const reviewIdx = req.params.reviewIdx;
+
+  if (!reviewIdx) return res.send(response(baseResponse.REVIEW_ID_EMPTY));
+
+  const postReviewResponse = await reviewService.createReviewLike(
+    userIdFromJWT,
+    reviewIdx
+  );
+
+  return res.send(postReviewResponse);
 };

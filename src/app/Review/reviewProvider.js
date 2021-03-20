@@ -20,3 +20,13 @@ exports.reviewCheck = async function (reviewIdx) {
   connection.release();
   return reviewResult;
 };
+exports.retrieveHeart = async function (reviewIdx, userIdx) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const reviewResult = await reviewDao.selectReviewHeart(
+    connection,
+    reviewIdx,
+    userIdx
+  );
+  connection.release();
+  return reviewResult;
+};

@@ -17,4 +17,10 @@ module.exports = function (app) {
     jwtMiddleware,
     review.patchReviewStatus
   );
+  //리뷰 좋아요
+  app.post(
+    "/app/reviews/:reviewIdx/like",
+    jwtMiddleware,
+    review.postReviewLike
+  );
 };

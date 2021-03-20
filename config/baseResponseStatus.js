@@ -214,6 +214,11 @@ module.exports = {
     code: 2038,
     message: "리뷰이미지는 최대 30장입니다",
   },
+  STATUS_ERROR_TYPE: {
+    isSuccess: false,
+    code: 2039,
+    message: "status값이 잘못되었습니다",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,
