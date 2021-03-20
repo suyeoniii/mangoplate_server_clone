@@ -219,6 +219,16 @@ module.exports = {
     code: 2039,
     message: "status값이 잘못되었습니다",
   },
+  COMMENT_CONTENTS_EMPTY: {
+    isSuccess: false,
+    code: 2040,
+    message: "status값이 잘못되었습니다",
+  },
+  COMMENT_CONTENTS_LENGTH: {
+    isSuccess: false,
+    code: 2041,
+    message: "댓글길이는 최대 100자입니다",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,

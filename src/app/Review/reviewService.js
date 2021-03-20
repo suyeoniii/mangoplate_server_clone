@@ -137,8 +137,6 @@ exports.createReviewLike = async function (userIdx, reviewIdx) {
     const reviewIdxRows = await reviewProvider.reviewCheck(reviewIdx);
     if (reviewIdxRows.length < 1)
       return errResponse(baseResponse.REVIEW_ID_NOT_EXIST);
-    if (reviewIdxRows.userIdx < 1)
-      return errResponse(baseResponse.REVIEW_USER_NOT_MATCH);
 
     //heart 테이블 확인
     const heartRows = await reviewProvider.retrieveHeart(reviewIdx, userIdx);
@@ -171,6 +169,35 @@ exports.createReviewLike = async function (userIdx, reviewIdx) {
     }
   } catch (err) {
     logger.error(`App - createReviewLike Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};
+//리뷰 댓글 등록 API
+exports.createReviewComment = async function (userIdx, reviewIdx, contents) {
+  try {
+    //userIdx 확인
+    const userRows = await userProvider.retrieveUser(userIdx);
+    if (userRows.length < 1) return errResponse(baseResponse.USER_ID_NOT_EXIST);
+
+    //reviewIdx 확인
+    const reviewIdxRows = await reviewProvider.reviewCheck(reviewIdx);
+    if (reviewIdxRows.length < 1)
+      return errResponse(baseResponse.REVIEW_ID_NOT_EXIST);
+
+    //insert
+    const connection = await pool.getConnection(async (conn) => conn);
+    const reviewResult = await reviewDao.insertReviewComment(
+      connection,
+      userIdx,
+      reviewIdx,
+      contents
+    );
+    connection.release();
+    return response(baseResponse.SUCCESS, {
+      reviewIdx: reviewResult.insertId,
+    });
+  } catch (err) {
+    logger.error(`App - createReviewComment Service error\n: ${err.message}`);
     return errResponse(baseResponse.DB_ERROR);
   }
 };

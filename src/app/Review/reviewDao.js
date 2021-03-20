@@ -169,6 +169,16 @@ async function updateReviewHeart(connection, reviewIdx, userIdx, status) {
   ]);
   return reviewRows[0];
 }
+async function insertReviewComment(connection, userIdx, reviewIdx, contents) {
+  const insertReviewCommentQuery = `INSERT INTO Comment(contents, reviewIdx, userIdx) VALUES(?,?,?)`;
+
+  const reviewRows = await connection.query(insertReviewCommentQuery, [
+    contents,
+    reviewIdx,
+    userIdx,
+  ]);
+  return reviewRows[0];
+}
 module.exports = {
   selectReviewById,
   insertReview,
@@ -178,4 +188,5 @@ module.exports = {
   selectReviewHeart,
   insertReviewHeart,
   updateReviewHeart,
+  insertReviewComment,
 };

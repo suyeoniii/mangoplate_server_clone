@@ -186,3 +186,30 @@ exports.postReviewLike = async function (req, res) {
 
   return res.send(postReviewResponse);
 };
+/**
+ * API No.
+ * API Name : 리뷰 댓글 API
+ * [POST] /app/reviews/:reviewIdx/comment
+ */
+exports.postReviewComment = async function (req, res) {
+  /**
+   * path variable : reviewIdx
+   * Body : contents
+   */
+  const userIdFromJWT = req.verifiedToken.userIdx;
+  const reviewIdx = req.params.reviewIdx;
+  const contents = req.body.contents;
+
+  if (!reviewIdx) return res.send(response(baseResponse.REVIEW_ID_EMPTY));
+  if (!contents) return res.send(response(baseResponse.COMMENT_CONTENTS_EMPTY));
+  if (contents.length > 100)
+    return res.send(response(baseResponse.COMMENT_CONTENTS_LENGTH));
+
+  const postReviewCommentResponse = await reviewService.createReviewComment(
+    userIdFromJWT,
+    reviewIdx,
+    contents
+  );
+
+  return res.send(postReviewCommentResponse);
+};
