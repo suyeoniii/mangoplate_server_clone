@@ -2,7 +2,7 @@ module.exports = function (app) {
   const review = require("./reviewController");
   const jwtMiddleware = require("../../../config/jwtMiddleware");
 
-  //리뷰 조회 API
+  //리뷰 상세 조회 API
   app.get("/app/reviews/:reviewIdx", review.getReviewById);
 
   //리뷰 쓰기 API
@@ -41,4 +41,6 @@ module.exports = function (app) {
     jwtMiddleware,
     review.patchReviewCommentStatus
   );
+  //리뷰 전체 조회 API
+  app.get("/app/reviews", review.getReviews);
 };

@@ -39,3 +39,24 @@ exports.commentCheck = async function (commentIdx) {
   connection.release();
   return commentResult;
 };
+exports.retrieveReviews = async function (
+  userIdx,
+  area,
+  category,
+  score,
+  page,
+  limit
+) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const reviewResult = await reviewDao.selectReviews(
+    connection,
+    userIdx,
+    area,
+    category,
+    score,
+    page,
+    limit
+  );
+  connection.release();
+  return reviewResult;
+};

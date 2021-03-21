@@ -101,7 +101,7 @@ module.exports = {
   USER_ID_NOT_MATCH: {
     isSuccess: false,
     code: 2016,
-    message: "유저 아이디 값을 확인해주세요",
+    message: "로그인유저의 userIdx와 일치하지 않습니다",
   },
   USER_NICKNAME_EMPTY: {
     isSuccess: false,
@@ -233,6 +233,16 @@ module.exports = {
     isSuccess: false,
     code: 2042,
     message: "댓글 식별자를 입력해주세요",
+  },
+  REVIEW_CATEGORY_ERROR_TYPE: {
+    isSuccess: false,
+    code: 2043,
+    message: "카테고리 값이 잘못되었습니다",
+  },
+  REVIEW_SCORE_EMPTY: {
+    isSuccess: false,
+    code: 2044,
+    message: "만족도 값을 최소 1개이상 선택해주세요",
   },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {

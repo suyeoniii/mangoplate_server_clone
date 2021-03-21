@@ -47,30 +47,6 @@ exports.getReviewById = async function (req, res) {
 
 /**
  * API No.
- * API Name : 가고싶다 등록, 수정, 삭제
- * [POST] /app/reviews/:reviewIdx/star
- */
-exports.postStar = async function (req, res) {
-  /**
-   * path variable : reviewIdx
-   */
-  const userIdFromJWT = req.verifiedToken.userIdx;
-  const reviewIdx = req.params.reviewIdx;
-  const { contents, status } = req.body;
-
-  if (!reviewIdx) return res.send(response(baseResponse.RESTAURANT_ID_EMPTY));
-
-  const postStarResponse = await reviewService.updateStars(
-    userIdFromJWT,
-    reviewIdx,
-    contents,
-    status
-  );
-  return res.send(postStarResponse);
-};
-
-/**
- * API No.
  * API Name : 리뷰 등록
  * [POST] /app/reviews
  */
@@ -261,4 +237,48 @@ exports.patchReviewCommentStatus = async function (req, res) {
   );
 
   return res.send(patchReviewCommentResponse);
+};
+/**
+ * API No.
+ * API Name : 리뷰 전체 조회
+ * [GET] /app/reviews/:reviewIdx
+ */
+exports.getReviews = async function (req, res) {
+  /**
+   * Query String : area, category, score, page, limit
+   */
+  const token = req.headers["x-access-token"] || req.query.token;
+  var userIdFromJWT;
+  const { area, category, score, page, limit } = req.query;
+
+  //토큰 받은 경우
+  if (token) {
+    jwt.verify(token, secret_config.jwtsecret, (err, verifiedToken) => {
+      if (verifiedToken) {
+        userIdFromJWT = verifiedToken.userIdx;
+      }
+    });
+    if (!userIdFromJWT) {
+      return res.send(errResponse(baseResponse.TOKEN_VERIFICATION_FAILURE));
+    }
+  }
+
+  if (category && category != 1)
+    return res.send(errResponse(baseResponse.REVIEW_CATEGORY_ERROR_TYPE));
+  if (!score) return res.send(errResponse(baseResponse.REVIEW_SCORE_EMPTY));
+  for (var element in score) {
+    if (score[element] > 3 || score[element] < 1)
+      return res.send(response(baseResponse.REVIEW_SCORE_ERROR_TYPE));
+  }
+
+  const reviewResult = await reviewProvider.retrieveReviews(
+    userIdFromJWT,
+    area,
+    category,
+    score,
+    page,
+    limit
+  );
+
+  return res.send(response(baseResponse.SUCCESS, reviewResult));
 };

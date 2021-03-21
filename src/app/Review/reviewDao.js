@@ -204,6 +204,101 @@ async function updateReviewCommentStatus(connection, userIdx, commentIdx) {
   ]);
   return reviewRows[0];
 }
+async function selectReviews(
+  connection,
+  userIdx,
+  area,
+  category,
+  score,
+  page,
+  limit
+) {
+  //리뷰 전체 조회
+  var selectReviewQuery = `select Rev.idx reviewIdx, Rev.userIdx, U.nickname,U.profileImg, ifnull(reviews, 0) reviews, 
+  ifnull(follower, 0) follower,Rev.score, Res.area, Res.restaurantName,
+  Rev.contents,ifnull(heart, 0) heart, ifnull(comment, 0) comment, case
+  when TIMESTAMPDIFF(Minute, Rev.updatedAt, current_timestamp()) < 60
+   then CONCAT(TIMESTAMPDIFF(Minute, Rev.updatedAt, current_timestamp()),'분 전')
+   when TIMESTAMPDIFF(Hour, Rev.updatedAt, current_timestamp()) < 24
+   then CONCAT(TIMESTAMPDIFF(Hour, Rev.updatedAt, current_timestamp()),'시간 전')
+  when TIMESTAMPDIFF(Day, Rev.updatedAt, current_timestamp()) < 8
+   then CONCAT(TIMESTAMPDIFF(Day, Rev.updatedAt, current_timestamp()),'일 전')
+  else DATE_FORMAT(Rev.updatedAt, '%Y-%m-%d')
+   end as updatedAt`;
+
+  if (userIdx) {
+    selectReviewQuery += `,ifnull(isStar, 0) isStar,ifnull(isVisited, 0) isVisited, ifnull(isHeart, 0) isHeart`;
+  }
+  selectReviewQuery += ` from Review Rev
+  inner join Restaurant Res on Rev.restaurantIdx=Res.idx
+  inner join User U on U.idx=Rev.userIdx
+  left outer join (select count(*) reviews, Rev.idx idx from Review Rev group by Rev.restaurantIdx) as Reviews on Reviews.idx=Res.idx
+  left outer join (select count(*) as follower,U.idx idx from Follow F
+  inner join User U on F.followIdx=U.idx group by U.idx) F on F.idx=U.idx
+  left outer join (select count(*) comment, reviewIdx from Comment group by reviewIdx) Com on Com.reviewIdx=Rev.idx
+  left outer join (select count(*) heart,count(case when Heart.status=0 AND userIdx=${userIdx} then 1 end) isHeart, reviewIdx from Heart group by reviewIdx) Heart on Heart.reviewIdx=Rev.idx
+  left outer join (select count(case when Star.status=0 AND userIdx=${userIdx} then 1 end) isStar, restaurantIdx from Star group by restaurantIdx) Star on Star.restaurantIdx=Rev.idx
+  left outer join (select count(case when Visited.status=0 AND userIdx=${userIdx} then 1 end) isVisited, restaurantIdx from Visited group by restaurantIdx) Visited on Visited.restaurantIdx=Rev.idx
+  where 1`;
+
+  //지역
+  if (typeof area === "object") {
+    selectReviewQuery += ` AND (0`;
+    for (var element in area) {
+      selectReviewQuery += ` OR area='${area[element]}'`;
+    }
+    selectReviewQuery += `)`;
+  } else if (typeof area === "string") {
+    selectReviewQuery += ` AND area='${area}'`;
+  }
+  //팔로잉 조회
+  console.log(typeof category);
+  if (category === 1)
+    selectReviewQuery += ` AND Rev.userIdx in (select F.followIdx from Follow F where F.followerIdx=${userIdx})`;
+
+  if (typeof score === "object") {
+    selectReviewQuery += ` AND (0`;
+    for (var element in score) {
+      selectReviewQuery += ` OR Rev.score='${score[element]}'`;
+    }
+    selectReviewQuery += `)`;
+  } else if (typeof score === "string") {
+    selectReviewQuery += ` AND Rev.score='${score}'`;
+  }
+
+  selectReviewQuery += ` Order by Rev.updatedAt DESC`;
+
+  if (!limit) {
+    limit = 20;
+  }
+  if (!page) {
+    page = 1;
+  }
+  if (page) {
+    selectReviewQuery += ` LIMIT ${limit * (page - 1)},${limit}`;
+  }
+
+  const selectReviewImgQuery = `select imgUrl from ReviewImg RI
+  inner join Review Rev on Rev.idx=RI.reviewIdx
+  where RI.reviewIdx=?`;
+
+  console.log(selectReviewQuery);
+
+  const [reviewRows] = await connection.query(selectReviewQuery);
+
+  //리뷰 이미지
+  for (i in reviewRows) {
+    const [reviewImgRows] = await connection.query(
+      selectReviewImgQuery,
+      reviewRows[i].reviewIdx
+    );
+    reviewRows[i].reviewImg = reviewImgRows;
+  }
+  console.log(reviewRows);
+  return reviewRows;
+
+  return reviewRows;
+}
 module.exports = {
   selectReviewById,
   insertReview,
@@ -217,4 +312,5 @@ module.exports = {
   selectCommentIdx,
   updateReviewComment,
   updateReviewCommentStatus,
+  selectReviews,
 };
