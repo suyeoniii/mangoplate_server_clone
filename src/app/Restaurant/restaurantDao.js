@@ -15,7 +15,7 @@ async function selectRestaurantList(
   distance
 ) {
   var selectRestaurantListQuery = `
-  select Res.idx,imgUrl, restaurantName, area, FORMAT(views, 0) views, reviews, score`;
+  select Res.idx,imgUrl, restaurantName, area, FORMAT(views, 0) views, FORMAT(reviews, 0) reviews, score`;
 
   if (lat && long) {
     selectRestaurantListQuery += `,case when distance < 1
@@ -23,7 +23,6 @@ async function selectRestaurantList(
              when distance >=1 then Concat(distance,'km')
   end as distance`;
   }
-  console.log(userIdx);
   if (userIdx) {
     selectRestaurantListQuery += `,ifnull(isStar, 0) isStar, ifnull(isVisited, 0) isVisited`;
   }
