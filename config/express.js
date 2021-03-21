@@ -21,6 +21,7 @@ module.exports = function () {
   require("../src/app/User/userRoute")(app);
   require("../src/app/Restaurant/restaurantRoute")(app);
   require("../src/app/Review/reviewRoute")(app);
+  require("../src/app/EatDeal/eatDealRoute")(app);
   // require('../src/app/Board/boardRoute')(app);
 
   return app;
