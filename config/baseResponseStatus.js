@@ -244,6 +244,11 @@ module.exports = {
     code: 2044,
     message: "만족도 값을 최소 1개이상 선택해주세요",
   },
+  EATDEAL_ID_EMPTY: {
+    isSuccess: false,
+    code: 2045,
+    message: "잇딜식별자를 입력해주세요",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,

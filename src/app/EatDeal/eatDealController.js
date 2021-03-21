@@ -28,7 +28,7 @@ exports.getEatDeals = async function (req, res) {
 
 /**
  * API No.
- * API Name : 리뷰 상세 조회
+ * API Name : 잇딜 상세 조회
  * [GET] /app/eatDeals/:eatDealIdx
  */
 exports.getEatDealById = async function (req, res) {
@@ -37,12 +37,9 @@ exports.getEatDealById = async function (req, res) {
    */
   const eatDealIdx = req.params.eatDealIdx;
 
-  if (!eatDealIdx) return res.send(response(baseResponse.REVIEW_ID_EMPTY));
+  if (!eatDealIdx) return res.send(response(baseResponse.EATDEAL_ID_EMPTY));
 
-  const eatDealResult = await eatDealProvider.retrieveEatDealById(
-    eatDealIdx,
-    userIdFromJWT
-  );
+  const eatDealResult = await eatDealProvider.retrieveEatDealById(eatDealIdx);
 
   return res.send(response(baseResponse.SUCCESS, eatDealResult));
 };
