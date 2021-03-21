@@ -6,6 +6,7 @@ const secret_config = require("../../../config//secret");
 const { response, errResponse } = require("../../../config/response");
 const { smtpTransport } = require("../../../config/email.js");
 var request = require("request");
+const jwt = require("jsonwebtoken");
 
 const regexEmail = require("regex-email");
 const { emit } = require("nodemon");
@@ -346,4 +347,36 @@ exports.getUserInfo = async function (req, res) {
 
   const getUserResponse = await userProvider.retrieveUserInfo(userIdx);
   return res.send(response(baseResponse.SUCCESS, getUserResponse));
+};
+/**
+ * API No. 마이페이지 조회
+ * [GET] /app/users/:userIdx/profile
+ */
+exports.getUser = async function (req, res) {
+  const userIdx = req.params.userIdx;
+
+  const token = req.headers["x-access-token"] || req.query.token;
+  var userIdFromJWT;
+
+  //토큰 받은 경우
+  if (token) {
+    jwt.verify(token, secret_config.jwtsecret, (err, verifiedToken) => {
+      if (verifiedToken) {
+        userIdFromJWT = verifiedToken.userIdx;
+      }
+    });
+    if (!userIdFromJWT) {
+      return res.send(errResponse(baseResponse.TOKEN_VERIFICATION_FAILURE));
+    }
+  }
+  if (userIdFromJWT == userIdx) {
+    const getUserResponse = await userProvider.retrieveUserInfo(userIdx);
+    return res.send(response(baseResponse.SUCCESS, getUserResponse));
+  } else {
+    const getUserResponse = await userProvider.retrieveUserProfile(
+      userIdx,
+      userIdFromJWT
+    );
+    return res.send(response(baseResponse.SUCCESS, getUserResponse));
+  }
 };

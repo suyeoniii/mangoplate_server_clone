@@ -33,7 +33,10 @@ module.exports = function (app) {
   app.patch("/app/logout", jwtMiddleware, user.logout);
 
   //마이페이지 조회
-  app.get("/app/users/:userIdx", jwtMiddleware, user.getUserInfo);
+  //app.get("/app/users/:userIdx", jwtMiddleware, user.getUserInfo);
+
+  //사용자 프로필 조회
+  app.get("/app/users/:userIdx", user.getUser);
 
   // 회원 정보 수정 API (JWT 검증 및 Validation - 메소드 체이닝 방식으로 jwtMiddleware 사용)
   //app.patch('/app/users/:userId', jwtMiddleware, user.patchUsers)

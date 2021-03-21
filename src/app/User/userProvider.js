@@ -86,3 +86,14 @@ exports.retrieveUserInfo = async function (userIdx) {
 
   return userInfoResult[0];
 };
+exports.retrieveUserProfile = async function (userIdx, userIdFromJWT) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const userInfoResult = await userDao.selectUserProfile(
+    connection,
+    userIdx,
+    userIdFromJWT
+  );
+  connection.release();
+
+  return userInfoResult[0];
+};

@@ -192,6 +192,36 @@ left outer join (select ST.userIdx,count(*) star from Star ST where ST.status=0 
   );
   return selectUserInfoRow;
 }
+//프로필 조회
+async function selectUserProfile(connection, userIdx, userIdFromJWT) {
+  var selectUserInfoQuery = `select U.idx userIdx, U.profileImg, U.nickname,
+  ifnull(follower,0) follower, ifnull(following,0) following`;
+
+  if (userIdFromJWT) {
+    selectUserInfoQuery += `, ifnull(isFollow, 0) isFollow `;
+  }
+
+  selectUserInfoQuery += `,ifnull(reviews,0) reviews, ifnull(visited,0) visited,ifnull(photos,0) photos, ifnull(star,0) star
+  from User U
+  left outer join (select count(*) follower ,followIdx from Follow where status=0 group by followIdx) Fer on Fer.followIdx=U.idx
+  left outer join (select count(*) following ,followerIdx from Follow where status=0 group by followerIdx) Fin on Fin.followerIdx=U.idx
+  left outer join (select Rev.userIdx,count(*) reviews from Review Rev where Rev.status=0 group by Rev.userIdx) R on R.userIdx=U.idx
+  left outer join (select VI.userIdx,count(*) visited from Visited VI where VI.status=0 group by VI.userIdx) V on V.userIdx=U.idx
+  left outer join (select Rev.userIdx,count(*) photos from ReviewImg RI inner join Review Rev on RI.reviewIdx=Rev.idx where RI.status=0 AND Rev.status=0 group by Rev.userIdx) RR on RR.userIdx=U.idx
+  left outer join (select ST.userIdx,count(*) star from Star ST where ST.status=0 group by ST.userIdx) S on S.userIdx=U.idx
+  `;
+  if (userIdFromJWT) {
+    selectUserInfoQuery += ` left outer join(select count(case when Follow.status=0 then 1 end) isFollow, followIdx from Follow where followerIdx=${userIdFromJWT}) F on F.followIdx = U.idx
+    `;
+  }
+  selectUserInfoQuery += `where U.idx=?`;
+
+  const selectUserInfoRow = await connection.query(
+    selectUserInfoQuery,
+    userIdx
+  );
+  return selectUserInfoRow;
+}
 
 module.exports = {
   selectUser,
@@ -211,4 +241,5 @@ module.exports = {
   selectLoginUser,
   insertLoginUser,
   selectUserInfo,
+  selectUserProfile,
 };
