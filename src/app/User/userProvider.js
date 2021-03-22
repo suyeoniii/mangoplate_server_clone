@@ -1,3 +1,4 @@
+const baseResponseStatus = require("../../../config/baseResponseStatus");
 const { pool } = require("../../../config/database");
 const { logger } = require("../../../config/winston");
 
@@ -96,4 +97,79 @@ exports.retrieveUserProfile = async function (userIdx, userIdFromJWT) {
   connection.release();
 
   return userInfoResult[0];
+};
+exports.retrieveUserTimeline = async function (userIdx, userIdFromJWT) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const userResult = await userDao.selectUserTimeline(
+    connection,
+    userIdx,
+    userIdFromJWT
+  );
+  connection.release();
+
+  return userResult[0];
+};
+//내 가고싶다 조회
+exports.retrieveMyStar = async function (
+  userIdx,
+  area,
+  sort,
+  food,
+  price,
+  parking,
+  page,
+  limit,
+  lat,
+  long
+) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const userResult = await userDao.selectMyStar(
+    connection,
+    userIdx,
+    area,
+    sort,
+    food,
+    price,
+    parking,
+    page,
+    limit,
+    lat,
+    long
+  );
+  connection.release();
+
+  return userResult[0];
+};
+//다른 사용자 가고싶다 조회
+exports.retrieveUserStar = async function (
+  userIdx,
+  userIdFromJWT,
+  area,
+  sort,
+  food,
+  price,
+  parking,
+  page,
+  limit,
+  lat,
+  long
+) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const userResult = await userDao.selectUserStar(
+    connection,
+    userIdx,
+    userIdFromJWT,
+    area,
+    sort,
+    food,
+    price,
+    parking,
+    page,
+    limit,
+    lat,
+    long
+  );
+  connection.release();
+
+  return userResult[0];
 };

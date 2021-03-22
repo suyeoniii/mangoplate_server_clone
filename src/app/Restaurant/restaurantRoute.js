@@ -27,4 +27,7 @@ module.exports = function (app) {
     jwtMiddleware,
     restaurant.patchVisitedStatus
   );
+
+  //맛집 이미지 상세조회
+  //app.get("/app/restaurants/:restaurantIdx/", restaurant.getRestaurantsById);
 };

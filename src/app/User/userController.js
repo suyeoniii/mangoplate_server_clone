@@ -329,6 +329,9 @@ exports.autoLogin = async function (req, res) {
 exports.logout = async function (req, res) {
   const userIdFromJWT = req.verifiedToken.userIdx;
 
+  console.log(req.verifiedToken);
+  console.log(req.verifiedToken.userIdx);
+
   const logoutResponse = await userService.patchJwtStatus(userIdFromJWT);
 
   return res.send(logoutResponse);
@@ -350,7 +353,7 @@ exports.getUserInfo = async function (req, res) {
 };
 /**
  * API No. 마이페이지 조회
- * [GET] /app/users/:userIdx/profile
+ * [GET] /app/users/:userIdx
  */
 exports.getUser = async function (req, res) {
   const userIdx = req.params.userIdx;
@@ -376,6 +379,147 @@ exports.getUser = async function (req, res) {
     const getUserResponse = await userProvider.retrieveUserProfile(
       userIdx,
       userIdFromJWT
+    );
+    return res.send(response(baseResponse.SUCCESS, getUserResponse));
+  }
+};
+/**
+ * API No. 타임라인 조회
+ * [GET] /app/users/:userIdx/timeline
+ */
+exports.getUserTimeline = async function (req, res) {
+  const userIdx = req.params.userIdx;
+
+  const token = req.headers["x-access-token"] || req.query.token;
+  var userIdFromJWT;
+  if (!userIdx) return res.send(errResponse(baseResponse.USER_USERID_EMPTY));
+
+  //토큰 받은 경우
+  if (token) {
+    jwt.verify(token, secret_config.jwtsecret, (err, verifiedToken) => {
+      if (verifiedToken) {
+        userIdFromJWT = verifiedToken.userIdx;
+      }
+    });
+    if (!userIdFromJWT) {
+      return res.send(errResponse(baseResponse.TOKEN_VERIFICATION_FAILURE));
+    }
+  }
+  const getUserResponse = await userProvider.retrieveUserTimeline(
+    userIdx,
+    userIdFromJWT
+  );
+  return res.send(response(baseResponse.SUCCESS, getUserResponse));
+};
+/**
+ * API 가고싶다 조회
+ * [GET] /app/users/:userIdx/star
+ */
+exports.getUserStar = async function (req, res) {
+  /*
+   *Query String : area, sort, food, price, parking, page, limit, lat, long
+   */
+  const userIdx = req.params.userIdx;
+  const token = req.headers["x-access-token"] || req.query.token;
+  var userIdFromJWT;
+  if (!userIdx) return res.send(errResponse(baseResponse.USER_USERID_EMPTY));
+
+  const userResult = await userProvider.retrieveUser(userIdx);
+  if (!userResult || userResult.length < 1)
+    return res.send(response(baseResponse.USER_ID_NOT_EXIST));
+
+  const {
+    area,
+    sort,
+    food,
+    price,
+    parking,
+    page,
+    limit,
+    lat,
+    long,
+  } = req.query;
+
+  //토큰 받은 경우
+  if (token) {
+    jwt.verify(token, secret_config.jwtsecret, (err, verifiedToken) => {
+      if (verifiedToken) {
+        userIdFromJWT = verifiedToken.userIdx;
+      }
+    });
+    if (!userIdFromJWT) {
+      return res.send(errResponse(baseResponse.TOKEN_VERIFICATION_FAILURE));
+    }
+  }
+
+  if (sort > 3 || sort < 0)
+    return res.send(response(baseResponse.RESTAURANT_SORT_ERROR_TYPE));
+
+  if (sort == 3 && (!lat || !long))
+    return res.send(response(baseResponse.DISTANCE_NEED_LOCATION));
+
+  if (typeof food === "string") {
+    if (food > 8 || food < 0)
+      return res.send(response(baseResponse.RESTAURANT_FOOD_ERROR_TYPE));
+  } else {
+    for (var element in food) {
+      if (food[element] > 8 || food[element] < 0)
+        return res.send(response(baseResponse.RESTAURANT_FOOD_ERROR_TYPE));
+    }
+  }
+  if (typeof price === "string") {
+    if (price > 4 || price < 0)
+      return res.send(response(baseResponse.RESTAURANT_PRICE_ERROR_TYPE));
+  } else {
+    for (var element in price) {
+      if (price[element] > 4 || price[element] < 0)
+        return res.send(response(baseResponse.RESTAURANT_PRICE_ERROR_TYPE));
+    }
+  }
+  if (parking > 2 || parking < 0)
+    return res.send(response(baseResponse.RESTAURANT_PARKING_ERROR_TYPE));
+
+  //토큰 받은 경우
+  if (token) {
+    jwt.verify(token, secret_config.jwtsecret, (err, verifiedToken) => {
+      if (verifiedToken) {
+        userIdFromJWT = verifiedToken.userIdx;
+      }
+    });
+    if (!userIdFromJWT) {
+      return res.send(errResponse(baseResponse.TOKEN_VERIFICATION_FAILURE));
+    }
+  }
+
+  if (userIdFromJWT == userIdx) {
+    //내 가고싶다 조회
+    const getUserResponse = await userProvider.retrieveMyStar(
+      userIdFromJWT,
+      area,
+      sort,
+      food,
+      price,
+      parking,
+      page,
+      limit,
+      lat,
+      long
+    );
+    return res.send(response(baseResponse.SUCCESS, getUserResponse));
+  } else {
+    //다른유저 가고싶다 조회
+    const getUserResponse = await userProvider.retrieveUserStar(
+      userIdx,
+      userIdFromJWT,
+      area,
+      sort,
+      food,
+      price,
+      parking,
+      page,
+      limit,
+      lat,
+      long
     );
     return res.send(response(baseResponse.SUCCESS, getUserResponse));
   }

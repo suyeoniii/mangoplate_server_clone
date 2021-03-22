@@ -138,9 +138,10 @@ async function selectRestaurantList(
 }
 
 async function selectRestaurant(connection, userIdx, restaurantIdx) {
-  var selectRestaurantQuery = `select Res.idx, restaurantName, FORMAT(views, 0) views, reviews, stars, score`;
+  var selectRestaurantQuery = `select Res.idx, restaurantName, FORMAT(views, 0) views, FORMAT(reviews, 0) reviews, 
+  ifnull(FORMAT(stars, 0),'0') stars, score`;
   if (userIdx) {
-    selectRestaurantQuery += `,isStar, visited`;
+    selectRestaurantQuery += `,ifnull(isStar,0) isStar, ifnull(visited,0) visited`;
   }
   selectRestaurantQuery += `,doro, jibeon, phone
   ,DATE_FORMAT(Res.updatedAt, '%Y-%m-%d') infoUpdatedAt, openingHours, breakTime, lastOrder, closedDays,

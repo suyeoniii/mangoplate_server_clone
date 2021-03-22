@@ -249,6 +249,11 @@ module.exports = {
     code: 2045,
     message: "잇딜식별자를 입력해주세요",
   },
+  DISTANCE_NEED_LOCATION: {
+    isSuccess: false,
+    code: 2045,
+    message: "거리정보는 위치정보가 필요합니다",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,
