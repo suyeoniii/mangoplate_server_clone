@@ -163,7 +163,7 @@ exports.retrieveUserStar = async function (
   return userResult[0];
 };
 //내 가봤어요 조회
-exports.retrieveMyVisited = async function (
+exports.retrieveMyReview = async function (
   userIdx,
   area,
   sort,
@@ -176,7 +176,7 @@ exports.retrieveMyVisited = async function (
   long
 ) {
   const connection = await pool.getConnection(async (conn) => conn);
-  const userResult = await userDao.selectMyVisited(
+  const userResult = await userDao.selectMyReview(
     connection,
     userIdx,
     area,
@@ -221,6 +221,74 @@ exports.retrieveUserVisited = async function (
     limit,
     lat,
     long
+  );
+  connection.release();
+
+  return userResult[0];
+};
+//다른 사용자 리뷰 조회
+exports.retrieveUserReview = async function (
+  userIdx,
+  userIdFromJWT,
+  area,
+  sort,
+  food,
+  price,
+  parking,
+  page,
+  limit,
+  lat,
+  long,
+  score
+) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const userResult = await userDao.selectUserReview(
+    connection,
+    userIdx,
+    userIdFromJWT,
+    area,
+    sort,
+    food,
+    price,
+    parking,
+    page,
+    limit,
+    lat,
+    long,
+    score
+  );
+  connection.release();
+
+  return userResult[0];
+};
+//내 리뷰 조회
+exports.retrieveMyReview = async function (
+  userIdx,
+  area,
+  sort,
+  food,
+  price,
+  parking,
+  page,
+  limit,
+  lat,
+  long,
+  score
+) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const userResult = await userDao.selectMyReview(
+    connection,
+    userIdx,
+    area,
+    sort,
+    food,
+    price,
+    parking,
+    page,
+    limit,
+    lat,
+    long,
+    score
   );
   connection.release();
 

@@ -254,6 +254,11 @@ module.exports = {
     code: 2045,
     message: "거리정보는 위치정보가 필요합니다",
   },
+  RESTAURANT_SCORE_ERROR_TYPE: {
+    isSuccess: false,
+    code: 2046,
+    message: "만족도 값이 잘못되었습니다",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,

@@ -717,6 +717,235 @@ end as updatedAt`;
   );
   return selectUserVisitedRow;
 }
+//내 리뷰 조회
+async function selectMyReview(
+  connection,
+  userIdx,
+  area,
+  sort,
+  food,
+  price,
+  parking,
+  page,
+  limit,
+  lat,
+  long,
+  score
+) {
+  var selectUserReviewQuery = `select U.idx userIdx, U.profileImg, U.nickname, review, follower,Rev.contents,
+  Rev.restaurantIdx,area,restaurantName,Rev.score,
+         ifnull(Format(heart,0),0) heart, ifnull(Format(comment,0),0) comment,
+         case
+    when TIMESTAMPDIFF(Minute, Rev.updatedAt, current_timestamp()) < 60
+     then CONCAT(TIMESTAMPDIFF(Minute, Rev.updatedAt, current_timestamp()),'분 전')
+     when TIMESTAMPDIFF(Hour, Rev.updatedAt, current_timestamp()) < 24
+     then CONCAT(TIMESTAMPDIFF(Hour, Rev.updatedAt, current_timestamp()),'시간 전')
+    when TIMESTAMPDIFF(Day, Rev.updatedAt, current_timestamp()) < 8
+     then CONCAT(TIMESTAMPDIFF(Day, Rev.updatedAt, current_timestamp()),'일 전')
+    else DATE_FORMAT(Rev.updatedAt, '%Y-%m-%d')
+     end as updatedAt
+  `;
+
+  if (sort == 1 && lat && long) {
+    selectUserReviewQuery += `,case when distance < 1
+            then Concat(Round(distance*1000,0),'m')
+                       when distance >=1 then Concat(distance,'km')
+            end as distance`;
+  }
+
+  selectUserReviewQuery += ` from User U
+  left outer join (select Rev.userIdx userIdx,count(*) review from Review Rev where Rev.status=0 group by Rev.userIdx) R on R.userIdx=U.idx
+  left outer join (select F.followIdx idx,count(*) follower from Follow F where F.status=0 group by followIdx) F on F.idx=U.idx
+  inner join Review Rev on Rev.userIdx=U.idx
+  inner join Restaurant Res on Res.idx=Rev.restaurantIdx
+  left outer join (select C.reviewIdx idx, count(*) comment from Comment C where C.status = 0) C on C.idx=Rev.idx
+  left outer join (select H.reviewIdx idx, count(*) heart from Heart H where H.status=0 group by reviewIdx) H on H.idx=Rev.idx
+  left outer join (select He.reviewIdx idx, count(*) isHeart from Heart He where He.status=0 and userIdx=1 group by reviewIdx) He on He.idx=Rev.idx
+  left outer join (select S.restaurantIdx idx, count(*) isStar from Star S where S.status=0 and userIdx=1 group by S.restaurantIdx) S on S.idx=Res.idx
+  `;
+
+  if (lat && long) {
+    selectUserReviewQuery += ` inner join (SELECT idx,
+  Round((6371*acos(cos(radians(${lat}))*cos(radians(lati))*cos(radians(longi)
+  -radians(${long}))+sin(radians(${lat}))*sin(radians(lati)))),2)
+  AS distance FROM Restaurant)dis on dis.idx=Res.idx`;
+  }
+
+  selectUserReviewQuery += ` where U.idx=? AND U.status = 0 AND Rev.status = 0 AND Res.status = 0 `;
+  console.log(sort);
+  //지역
+  if (typeof area === "object") {
+    selectUserReviewQuery += ` AND (0`;
+    for (var element in area) {
+      selectUserReviewQuery += ` OR area='${area[element]}'`;
+    }
+    selectUserReviewQuery += `)`;
+  } else if (typeof area === "string") {
+    selectUserReviewQuery += ` AND area='${area}'`;
+  }
+  //음식종류 선택
+  if (typeof food === "object") {
+    selectUserReviewQuery += ` AND (0`;
+    for (var element in food) {
+      selectUserReviewQuery += ` OR type=${food[element]}`;
+    }
+    selectUserReviewQuery += `)`;
+  } else if (typeof food === "string") {
+    selectUserReviewQuery += ` AND type=${food}`;
+  }
+  //가격선택
+  if (typeof price === "object") {
+    selectUserReviewQuery += ` AND (0`;
+    for (var element in food) {
+      selectUserReviewQuery += ` OR price=${price[element]}`;
+    }
+    selectUserReviewQuery += `)`;
+  } else if (typeof price === "string") {
+    selectUserReviewQuery += ` AND price=${price}`;
+  }
+  if (parking) {
+    selectUserReviewQuery += ` AND parking=${parking}`;
+  }
+
+  selectUserReviewQuery += ` group by restaurantIdx`;
+
+  if (sort == 1 && lat && long) {
+    selectUserReviewQuery += ` ORDER BY dis.distance`;
+  } else {
+    selectUserReviewQuery += ` ORDER by updatedAt`;
+  }
+
+  if (!limit) {
+    limit = 20;
+  }
+  if (!page) {
+    page = 1;
+  }
+  if (page) {
+    selectUserReviewQuery += ` LIMIT ${limit * (page - 1)},${limit}`;
+  }
+  console.log(selectUserReviewQuery);
+  const selectUserVisitedRow = await connection.query(
+    selectUserReviewQuery,
+    userIdx
+  );
+  return selectUserVisitedRow;
+}
+//다른 사용자 리뷰 조회
+async function selectUserReview(
+  connection,
+  userIdx,
+  userIdFromJWT,
+  area,
+  sort,
+  food,
+  price,
+  parking,
+  page,
+  limit,
+  lat,
+  long,
+  score
+) {
+  var selectUserReviewQuery = `select U.idx userIdx, U.profileImg, U.nickname, review, follower,Rev.contents,
+  Rev.restaurantIdx,area,restaurantName,Rev.score,
+         ifnull(Format(heart,0),0) heart, ifnull(Format(comment,0),0) comment,
+         case
+    when TIMESTAMPDIFF(Minute, Rev.updatedAt, current_timestamp()) < 60
+     then CONCAT(TIMESTAMPDIFF(Minute, Rev.updatedAt, current_timestamp()),'분 전')
+     when TIMESTAMPDIFF(Hour, Rev.updatedAt, current_timestamp()) < 24
+     then CONCAT(TIMESTAMPDIFF(Hour, Rev.updatedAt, current_timestamp()),'시간 전')
+    when TIMESTAMPDIFF(Day, Rev.updatedAt, current_timestamp()) < 8
+     then CONCAT(TIMESTAMPDIFF(Day, Rev.updatedAt, current_timestamp()),'일 전')
+    else DATE_FORMAT(Rev.updatedAt, '%Y-%m-%d')
+     end as updatedAt, ifnull(Format(isHeart,0),0) isHeart,ifnull(Format(isStar,0),0) isStar
+  `;
+
+  if (sort == 1 && lat && long) {
+    selectUserReviewQuery += `,case when distance < 1
+            then Concat(Round(distance*1000,0),'m')
+                       when distance >=1 then Concat(distance,'km')
+            end as distance`;
+  }
+
+  selectUserReviewQuery += ` from User U
+  left outer join (select Rev.userIdx userIdx,count(*) review from Review Rev where Rev.status=0 group by Rev.userIdx) R on R.userIdx=U.idx
+  left outer join (select F.followIdx idx,count(*) follower from Follow F where F.status=0 group by followIdx) F on F.idx=U.idx
+  inner join Review Rev on Rev.userIdx=U.idx
+  inner join Restaurant Res on Res.idx=Rev.restaurantIdx
+  left outer join (select C.reviewIdx idx, count(*) comment from Comment C where C.status = 0) C on C.idx=Rev.idx
+  left outer join (select H.reviewIdx idx, count(*) heart from Heart H where H.status=0 group by reviewIdx) H on H.idx=Rev.idx
+  left outer join (select He.reviewIdx idx, count(*) isHeart from Heart He where He.status=0 and userIdx=${userIdFromJWT} group by reviewIdx) He on He.idx=Rev.idx
+  left outer join (select S.restaurantIdx idx, count(*) isStar from Star S where S.status=0 and userIdx=${userIdFromJWT} group by S.restaurantIdx) S on S.idx=Res.idx
+  `;
+
+  if (lat && long) {
+    selectUserReviewQuery += ` inner join (SELECT idx,
+  Round((6371*acos(cos(radians(${lat}))*cos(radians(lati))*cos(radians(longi)
+  -radians(${long}))+sin(radians(${lat}))*sin(radians(lati)))),2)
+  AS distance FROM Restaurant)dis on dis.idx=Res.idx`;
+  }
+
+  selectUserReviewQuery += ` where U.idx=? AND U.status = 0 AND Rev.status = 0 AND Res.status = 0 `;
+  console.log(sort);
+  //지역
+  if (typeof area === "object") {
+    selectUserReviewQuery += ` AND (0`;
+    for (var element in area) {
+      selectUserReviewQuery += ` OR area='${area[element]}'`;
+    }
+    selectUserReviewQuery += `)`;
+  } else if (typeof area === "string") {
+    selectUserReviewQuery += ` AND area='${area}'`;
+  }
+  //음식종류 선택
+  if (typeof food === "object") {
+    selectUserReviewQuery += ` AND (0`;
+    for (var element in food) {
+      selectUserReviewQuery += ` OR type=${food[element]}`;
+    }
+    selectUserReviewQuery += `)`;
+  } else if (typeof food === "string") {
+    selectUserReviewQuery += ` AND type=${food}`;
+  }
+  //가격선택
+  if (typeof price === "object") {
+    selectUserReviewQuery += ` AND (0`;
+    for (var element in food) {
+      selectUserReviewQuery += ` OR price=${price[element]}`;
+    }
+    selectUserReviewQuery += `)`;
+  } else if (typeof price === "string") {
+    selectUserReviewQuery += ` AND price=${price}`;
+  }
+  if (parking) {
+    selectUserReviewQuery += ` AND parking=${parking}`;
+  }
+
+  selectUserReviewQuery += ` group by restaurantIdx`;
+
+  if (sort == 1 && lat && long) {
+    selectUserReviewQuery += ` ORDER BY dis.distance`;
+  } else {
+    selectUserReviewQuery += ` ORDER by updatedAt`;
+  }
+
+  if (!limit) {
+    limit = 20;
+  }
+  if (!page) {
+    page = 1;
+  }
+  if (page) {
+    selectUserReviewQuery += ` LIMIT ${limit * (page - 1)},${limit}`;
+  }
+  console.log(selectUserReviewQuery);
+  const selectUserVisitedRow = await connection.query(
+    selectUserReviewQuery,
+    userIdx
+  );
+  return selectUserVisitedRow;
+}
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -741,4 +970,6 @@ module.exports = {
   selectMyStar,
   selectUserVisited,
   selectMyVisited,
+  selectMyReview,
+  selectUserReview,
 };
