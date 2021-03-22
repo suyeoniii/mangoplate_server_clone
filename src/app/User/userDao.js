@@ -466,7 +466,257 @@ left outer join (select RI.reviewIdx, RI.imgUrl from ReviewImg RI where RI.statu
   );
   return selectUserStarRow;
 }
+//가봤어요 조회
+async function selectUserVisited(
+  connection,
+  userIdx,
+  userIdFromJWT,
+  area,
+  sort,
+  food,
+  price,
+  parking,
+  page,
+  limit,
+  lat,
+  long
+) {
+  var selectUserVisitedQuery = `select U.idx userIdx, U.profileImg, U.nickname,
+  ifnull(Format(review,0),0) review, ifnull(Format(follower,0),0) follower,VI.contents,
+VI.restaurantIdx, imgUrl restaurantImg, restaurantName,area, CONCAT(CONCAT(area, ' - '),
+ case
+     when type=0 then '카테고리 없음'
+     when type=1 then '한식'
+     when type=2 then '일식'
+     when type=3 then '중식'
+     when type=4 then '양식'
+     when type=5 then '세계음식'
+     when type=6 then '뷔페'
+     when type=7 then '카페'
+     when type=8 then '주점'
+      end) info,
+ Format(Res.views,0) views, ifnull(Format(reviews,0),0) reviews,
+ case
+when TIMESTAMPDIFF(Minute, VI.updatedAt, current_timestamp()) < 60
+then CONCAT(TIMESTAMPDIFF(Minute, VI.updatedAt, current_timestamp()),'분 전')
+when TIMESTAMPDIFF(Hour, VI.updatedAt, current_timestamp()) < 24
+then CONCAT(TIMESTAMPDIFF(Hour, VI.updatedAt, current_timestamp()),'시간 전')
+when TIMESTAMPDIFF(Day, VI.updatedAt, current_timestamp()) < 8
+then CONCAT(TIMESTAMPDIFF(Day, VI.updatedAt, current_timestamp()),'일 전')
+else DATE_FORMAT(VI.updatedAt, '%Y-%m-%d')
+end as updatedAt`;
 
+  if (userIdFromJWT) {
+    selectUserVisitedQuery += `,ifnull(Format(isStar,0),0) isStar`;
+  }
+  if (sort == 3 && lat && long) {
+    selectUserVisitedQuery += `,case when distance < 1
+            then Concat(Round(distance*1000,0),'m')
+                       when distance >=1 then Concat(distance,'km')
+            end as distance`;
+  }
+
+  selectUserVisitedQuery += `
+  from User U
+  left outer join Visited VI on VI.userIdx=U.idx
+  left outer join (select Rev.userIdx userIdx,count(*) review from Review Rev where Rev.status=0 group by Rev.userIdx) R on R.userIdx=U.idx
+  left outer join (select F.followIdx idx,count(*) follower from Follow F where F.status=0 group by followIdx) F on F.idx=U.idx
+  inner join Restaurant Res on Res.idx=VI.restaurantIdx
+  left outer join (select Rev.restaurantIdx, imgUrl from ReviewImg RI inner join Review Rev on RI.reviewIdx=Rev.idx group by Rev.restaurantIdx) RI on RI.restaurantIdx=Res.idx
+  left outer join (select Rev.restaurantIdx idx, count(*) reviews from Review Rev where Rev.status = 0 group by Rev.restaurantIdx) Re on Re.idx = Res.idx
+  left outer join (select S.restaurantIdx idx, count(*) isStar from Star S where S.status=0 and userIdx=1 group by S.restaurantIdx) S on S.idx=Res.idx
+  `;
+
+  if (lat && long) {
+    selectUserVisitedQuery += ` inner join (SELECT idx,
+  Round((6371*acos(cos(radians(${lat}))*cos(radians(lati))*cos(radians(longi)
+  -radians(${long}))+sin(radians(${lat}))*sin(radians(lati)))),2)
+  AS distance FROM Restaurant)dis on dis.idx=Res.idx`;
+  }
+
+  selectUserVisitedQuery += ` where U.idx=? AND U.status = 0 AND VI.status = 0 AND Res.status = 0 AND isPrivate=0`;
+
+  //지역
+  if (typeof area === "object") {
+    selectUserVisitedQuery += ` AND (0`;
+    for (var element in area) {
+      selectUserVisitedQuery += ` OR area='${area[element]}'`;
+    }
+    selectUserVisitedQuery += `)`;
+  } else if (typeof area === "string") {
+    selectUserVisitedQuery += ` AND area='${area}'`;
+  }
+  //음식종류 선택
+  if (typeof food === "object") {
+    selectUserVisitedQuery += ` AND (0`;
+    for (var element in food) {
+      selectUserVisitedQuery += ` OR type=${food[element]}`;
+    }
+    selectUserVisitedQuery += `)`;
+  } else if (typeof food === "string") {
+    selectUserVisitedQuery += ` AND type=${food}`;
+  }
+  //가격선택
+  if (typeof price === "object") {
+    selectUserVisitedQuery += ` AND (0`;
+    for (var element in food) {
+      selectUserVisitedQuery += ` OR price=${price[element]}`;
+    }
+    selectUserVisitedQuery += `)`;
+  } else if (typeof price === "string") {
+    selectUserVisitedQuery += ` AND price=${price}`;
+  }
+  if (parking) {
+    selectUserVisitedQuery += ` AND parking=${parking}`;
+  }
+
+  selectUserVisitedQuery += ` group by restaurantIdx`;
+
+  if (sort == 1 && lat && long) {
+    selectUserVisitedQuery += ` ORDER BY dis.distance`;
+  } else {
+    selectUserVisitedQuery += ` ORDER by updatedAt`;
+  }
+
+  if (!limit) {
+    limit = 20;
+  }
+  if (!page) {
+    page = 1;
+  }
+  if (page) {
+    selectUserVisitedQuery += ` LIMIT ${limit * (page - 1)},${limit}`;
+  }
+  console.log(selectUserVisitedQuery);
+  const selectUserVisitedRow = await connection.query(
+    selectUserVisitedQuery,
+    userIdx
+  );
+  return selectUserVisitedRow;
+}
+//내 가봤어요 조회
+async function selectMyVisited(
+  connection,
+  userIdx,
+  area,
+  sort,
+  food,
+  price,
+  parking,
+  page,
+  limit,
+  lat,
+  long
+) {
+  var selectUserVisitedQuery = `select U.idx userIdx, U.profileImg, U.nickname,
+  ifnull(Format(review,0),0) review, ifnull(Format(follower,0),0) follower,VI.contents,
+VI.restaurantIdx, imgUrl restaurantImg, restaurantName,area, CONCAT(CONCAT(area, ' - '),
+ case
+     when type=0 then '카테고리 없음'
+     when type=1 then '한식'
+     when type=2 then '일식'
+     when type=3 then '중식'
+     when type=4 then '양식'
+     when type=5 then '세계음식'
+     when type=6 then '뷔페'
+     when type=7 then '카페'
+     when type=8 then '주점'
+      end) info,
+ Format(Res.views,0) views, ifnull(Format(reviews,0),0) reviews,
+ case
+when TIMESTAMPDIFF(Minute, VI.updatedAt, current_timestamp()) < 60
+then CONCAT(TIMESTAMPDIFF(Minute, VI.updatedAt, current_timestamp()),'분 전')
+when TIMESTAMPDIFF(Hour, VI.updatedAt, current_timestamp()) < 24
+then CONCAT(TIMESTAMPDIFF(Hour, VI.updatedAt, current_timestamp()),'시간 전')
+when TIMESTAMPDIFF(Day, VI.updatedAt, current_timestamp()) < 8
+then CONCAT(TIMESTAMPDIFF(Day, VI.updatedAt, current_timestamp()),'일 전')
+else DATE_FORMAT(VI.updatedAt, '%Y-%m-%d')
+end as updatedAt`;
+
+  if (sort == 1 && lat && long) {
+    selectUserVisitedQuery += `,case when distance < 1
+            then Concat(Round(distance*1000,0),'m')
+                       when distance >=1 then Concat(distance,'km')
+            end as distance`;
+  }
+
+  selectUserVisitedQuery += `
+  from User U
+  left outer join Visited VI on VI.userIdx=U.idx
+  left outer join (select Rev.userIdx userIdx,count(*) review from Review Rev where Rev.status=0 group by Rev.userIdx) R on R.userIdx=U.idx
+  left outer join (select F.followIdx idx,count(*) follower from Follow F where F.status=0 group by followIdx) F on F.idx=U.idx
+  inner join Restaurant Res on Res.idx=VI.restaurantIdx
+  left outer join (select Rev.restaurantIdx, imgUrl from ReviewImg RI inner join Review Rev on RI.reviewIdx=Rev.idx group by Rev.restaurantIdx) RI on RI.restaurantIdx=Res.idx
+  left outer join (select Rev.restaurantIdx idx, count(*) reviews from Review Rev where Rev.status = 0 group by Rev.restaurantIdx) Re on Re.idx = Res.idx
+  `;
+
+  if (lat && long) {
+    selectUserVisitedQuery += ` inner join (SELECT idx,
+  Round((6371*acos(cos(radians(${lat}))*cos(radians(lati))*cos(radians(longi)
+  -radians(${long}))+sin(radians(${lat}))*sin(radians(lati)))),2)
+  AS distance FROM Restaurant)dis on dis.idx=Res.idx`;
+  }
+
+  selectUserVisitedQuery += ` where U.idx=? AND U.status = 0 AND VI.status = 0 AND Res.status = 0`;
+  console.log(sort);
+  //지역
+  if (typeof area === "object") {
+    selectUserVisitedQuery += ` AND (0`;
+    for (var element in area) {
+      selectUserVisitedQuery += ` OR area='${area[element]}'`;
+    }
+    selectUserVisitedQuery += `)`;
+  } else if (typeof area === "string") {
+    selectUserVisitedQuery += ` AND area='${area}'`;
+  }
+  //음식종류 선택
+  if (typeof food === "object") {
+    selectUserVisitedQuery += ` AND (0`;
+    for (var element in food) {
+      selectUserVisitedQuery += ` OR type=${food[element]}`;
+    }
+    selectUserVisitedQuery += `)`;
+  } else if (typeof food === "string") {
+    selectUserVisitedQuery += ` AND type=${food}`;
+  }
+  //가격선택
+  if (typeof price === "object") {
+    selectUserVisitedQuery += ` AND (0`;
+    for (var element in food) {
+      selectUserVisitedQuery += ` OR price=${price[element]}`;
+    }
+    selectUserVisitedQuery += `)`;
+  } else if (typeof price === "string") {
+    selectUserVisitedQuery += ` AND price=${price}`;
+  }
+  if (parking) {
+    selectUserVisitedQuery += ` AND parking=${parking}`;
+  }
+
+  selectUserVisitedQuery += ` group by restaurantIdx`;
+
+  if (sort == 1 && lat && long) {
+    selectUserVisitedQuery += ` ORDER BY dis.distance`;
+  } else {
+    selectUserVisitedQuery += ` ORDER by updatedAt`;
+  }
+
+  if (!limit) {
+    limit = 20;
+  }
+  if (!page) {
+    page = 1;
+  }
+  if (page) {
+    selectUserVisitedQuery += ` LIMIT ${limit * (page - 1)},${limit}`;
+  }
+  console.log(selectUserVisitedQuery);
+  const selectUserVisitedRow = await connection.query(
+    selectUserVisitedQuery,
+    userIdx
+  );
+  return selectUserVisitedRow;
+}
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -489,4 +739,6 @@ module.exports = {
   selectUserTimeline,
   selectUserStar,
   selectMyStar,
+  selectUserVisited,
+  selectMyVisited,
 };

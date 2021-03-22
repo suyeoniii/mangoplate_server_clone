@@ -35,8 +35,8 @@ module.exports = function (app) {
   //사용자 프로필(마이페이지 조회) 조회
   app.get("/app/users/:userIdx", user.getUser);
 
-  //타임라인 조회 API
-  //app.get("/app/users/:userIdx/timeline", user.getUserTimeline);
+  //가봤어요 조회 API
+  app.get("/app/users/:userIdx/visited", user.getUserVisited);
 
   //가고싶다 조회
   app.get("/app/users/:userIdx/star", user.getUserStar);
