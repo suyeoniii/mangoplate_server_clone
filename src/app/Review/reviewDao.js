@@ -28,7 +28,7 @@ async function selectReviewById(connection, reviewIdx, userIdx) {
   selectReviewQuery += ` where Rev.idx=?;`;
 
   //리뷰이미지 조회
-  const selectReviewImgQuery = `select imgUrl from ReviewImg RI where RI.reviewIdx=?;`;
+  const selectReviewImgQuery = `select RI.idx reviewImgIdx,imgUrl from ReviewImg RI where RI.reviewIdx=?;`;
 
   //댓글 조회
   const selectCommentsQuery = `select C.idx commentIdx, C.userIdx, U.nickname, U.profileImg, C.contents,
@@ -278,7 +278,7 @@ async function selectReviews(
     selectReviewQuery += ` LIMIT ${limit * (page - 1)},${limit}`;
   }
 
-  const selectReviewImgQuery = `select imgUrl from ReviewImg RI
+  const selectReviewImgQuery = `select RI.idx reviewImgIdx,imgUrl from ReviewImg RI
   inner join Review Rev on Rev.idx=RI.reviewIdx
   where RI.reviewIdx=?`;
 
@@ -295,8 +295,6 @@ async function selectReviews(
     reviewRows[i].reviewImg = reviewImgRows;
   }
   console.log(reviewRows);
-  return reviewRows;
-
   return reviewRows;
 }
 module.exports = {

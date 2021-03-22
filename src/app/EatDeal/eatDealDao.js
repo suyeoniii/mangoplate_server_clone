@@ -55,7 +55,7 @@ from EatDeal ED
 inner join (select Res.idx idx, area, restaurantName from Restaurant Res) Res on Res.idx=ED.restaurantIdx
 where ED.idx=?`;
 
-  const selectEatDealImgQuery = `select imgUrl from EatDealImg where eatDealIdx=?`;
+  const selectEatDealImgQuery = `select EatDealImg.idx eatDealImgIdx,imgUrl from EatDealImg where eatDealIdx=?`;
 
   const [eatDealRows] = await connection.query(selectEatDealQuery, [
     eatDealIdx,

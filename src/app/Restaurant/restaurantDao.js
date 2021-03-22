@@ -174,9 +174,9 @@ async function selectRestaurant(connection, userIdx, restaurantIdx) {
    end as new_score, Rev.idx idx
    from Review Rev) as Score on Score.idx=Rev.idx
    group by Rev.restaurantIdx) as new_Rev on new_Rev.resIdx = Res.idx
- inner join (select MAX(updatedAt) menuUpdatedAt,restaurantIdx from
+left outer join (select MAX(updatedAt) menuUpdatedAt,restaurantIdx from
  RestaurantMenu RM group by restaurantIdx) menuUpdate on menuUpdate.restaurantIdx=Res.idx
- inner join(select count(*) stars,restaurantIdx from Star where Star.status=0 group by restaurantIdx) Stars on Stars.restaurantIdx=Res.idx
+ left outer join(select count(*) stars,restaurantIdx from Star where Star.status=0 group by restaurantIdx) Stars on Stars.restaurantIdx=Res.idx
 `;
 
   if (userIdx) {
@@ -209,19 +209,19 @@ async function selectRestaurant(connection, userIdx, restaurantIdx) {
   const selectMenuQuery = `select menuName, price menuPrice, isBest from RestaurantMenu RM
   where restaurantIdx=? order by isBest;`;
 
-  const selectMenuImgQuery = `select imgUrl from MenuImg where restaurantIdx=?;
+  const selectMenuImgQuery = `select idx menuImgIdx, imgUrl from MenuImg where restaurantIdx=?;
   `;
 
-  const selectTagQuery = `select tagName from RestaurantTag RT
+  const selectTagQuery = `select idx tagIdx,tagName from RestaurantTag RT
   inner join Tag T on T.idx=RT.tagIdx
   where restaurantIdx=?;`;
 
-  const selectImgQuery = `select imgUrl from Review Rev
+  const selectImgQuery = `select RI.idx reviewImgIdx, imgUrl from Review Rev
   inner join ReviewImg RI on RI.reviewIdx=Rev.idx
   where Rev.restaurantIdx=? order by Rev.createdAt DESC limit 0,4;
   `;
 
-  const selectReviewImgQuery = `select imgUrl from ReviewImg RI
+  const selectReviewImgQuery = `select RI.idx reviewImgIdx,imgUrl from ReviewImg RI
   inner join Review Rev on Rev.idx=RI.reviewIdx
   where RI.reviewIdx=?;`;
   console.log(selectRestaurantQuery);
