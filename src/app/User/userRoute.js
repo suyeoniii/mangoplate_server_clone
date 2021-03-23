@@ -41,7 +41,7 @@ module.exports = function (app) {
   //가고싶다 조회
   app.get("/app/users/:userIdx/star", user.getUserStar);
 
-  //리뷰 조회
+  //사용자 리뷰 조회
   app.get("/app/users/:userIdx/review", user.getUserReview);
 
   // 회원 정보 수정 API (JWT 검증 및 Validation - 메소드 체이닝 방식으로 jwtMiddleware 사용)

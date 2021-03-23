@@ -676,6 +676,8 @@ exports.getUserReview = async function (req, res) {
 
   if (score > 2 || score < 0)
     return res.send(response(baseResponse.RESTAURANT_SCORE_ERROR_TYPE));
+  if (score != 0 && !score)
+    return res.send(response(baseResponse.REVIEW_SCORE_EMPTY));
 
   //토큰 받은 경우
   if (token) {

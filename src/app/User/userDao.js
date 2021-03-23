@@ -732,9 +732,9 @@ async function selectMyReview(
   long,
   score
 ) {
-  var selectUserReviewQuery = `select U.idx userIdx, U.profileImg, U.nickname, review, follower,Rev.contents,
+  var selectUserReviewQuery = `select Rev.idx reviewIdx,U.idx userIdx, U.profileImg, U.nickname, FORMAT(ifnull(review,0),0) review, FORMAT(ifnull(follower,0),0) follower,Rev.contents,
   Rev.restaurantIdx,area,restaurantName,Rev.score,
-         ifnull(Format(heart,0),0) heart, ifnull(Format(comment,0),0) comment,
+  FORMAT(ifnull(heart,0),0) heart, FORMAT(ifnull(comment,0),0) comment,
          case
     when TIMESTAMPDIFF(Minute, Rev.updatedAt, current_timestamp()) < 60
      then CONCAT(TIMESTAMPDIFF(Minute, Rev.updatedAt, current_timestamp()),'분 전')
@@ -771,8 +771,8 @@ async function selectMyReview(
   AS distance FROM Restaurant)dis on dis.idx=Res.idx`;
   }
 
-  selectUserReviewQuery += ` where U.idx=? AND U.status = 0 AND Rev.status = 0 AND Res.status = 0 `;
-  console.log(sort);
+  selectUserReviewQuery += ` where U.idx=${userIdx} AND U.status = 0 AND Rev.status = 0 AND Res.status = 0 `;
+
   //지역
   if (typeof area === "object") {
     selectUserReviewQuery += ` AND (0`;
@@ -784,27 +784,42 @@ async function selectMyReview(
     selectUserReviewQuery += ` AND area='${area}'`;
   }
   //음식종류 선택
-  if (typeof food === "object") {
-    selectUserReviewQuery += ` AND (0`;
-    for (var element in food) {
-      selectUserReviewQuery += ` OR type=${food[element]}`;
+  if (food && food != 0) {
+    if (typeof food === "object") {
+      selectUserReviewQuery += ` AND (0`;
+      for (var element in food) {
+        selectUserReviewQuery += ` OR type=${food[element]}`;
+      }
+      selectUserReviewQuery += `)`;
+    } else if (typeof food === "string") {
+      selectUserReviewQuery += ` AND type=${food}`;
     }
-    selectUserReviewQuery += `)`;
-  } else if (typeof food === "string") {
-    selectUserReviewQuery += ` AND type=${food}`;
   }
+
   //가격선택
-  if (typeof price === "object") {
-    selectUserReviewQuery += ` AND (0`;
-    for (var element in food) {
-      selectUserReviewQuery += ` OR price=${price[element]}`;
+  if (price && price != 0) {
+    if (typeof price === "object") {
+      selectUserReviewQuery += ` AND (0`;
+      for (var element in food) {
+        selectUserReviewQuery += ` OR price=${price[element]}`;
+      }
+      selectUserReviewQuery += `)`;
+    } else if (typeof price === "string") {
+      selectUserReviewQuery += ` AND price=${price}`;
     }
-    selectUserReviewQuery += `)`;
-  } else if (typeof price === "string") {
-    selectUserReviewQuery += ` AND price=${price}`;
   }
   if (parking) {
     selectUserReviewQuery += ` AND parking=${parking}`;
+  }
+  //만족도
+  if (typeof score === "object") {
+    selectUserReviewQuery += ` AND (0`;
+    for (var element in score) {
+      selectUserReviewQuery += ` OR score=${score[element]}`;
+    }
+    selectUserReviewQuery += `)`;
+  } else if (typeof score === "string") {
+    selectUserReviewQuery += ` AND score=${score}`;
   }
 
   selectUserReviewQuery += ` group by restaurantIdx`;
@@ -825,11 +840,21 @@ async function selectMyReview(
     selectUserReviewQuery += ` LIMIT ${limit * (page - 1)},${limit}`;
   }
   console.log(selectUserReviewQuery);
-  const selectUserVisitedRow = await connection.query(
-    selectUserReviewQuery,
-    userIdx
-  );
-  return selectUserVisitedRow;
+
+  const selectReviewImgQuery = `select RI.idx reviewImgIdx,imgUrl from ReviewImg RI
+  inner join Review Rev on Rev.idx=RI.reviewIdx
+  where RI.reviewIdx=?`;
+
+  const [reviewRows] = await connection.query(selectUserReviewQuery);
+
+  //리뷰 이미지
+  for (i in reviewRows) {
+    const [reviewImgRows] = await connection.query(selectReviewImgQuery, [
+      reviewRows[i].reviewIdx,
+    ]);
+    reviewRows[i].img = reviewImgRows;
+  }
+  return [reviewRows];
 }
 //다른 사용자 리뷰 조회
 async function selectUserReview(
@@ -847,9 +872,9 @@ async function selectUserReview(
   long,
   score
 ) {
-  var selectUserReviewQuery = `select U.idx userIdx, U.profileImg, U.nickname, review, follower,Rev.contents,
+  var selectUserReviewQuery = `select Rev.idx reviewIdx,U.idx userIdx, U.profileImg, U.nickname, FORMAT(ifnull(review,0),0) review, FORMAT(ifnull(follower,0),0) follower,Rev.contents,
   Rev.restaurantIdx,area,restaurantName,Rev.score,
-         ifnull(Format(heart,0),0) heart, ifnull(Format(comment,0),0) comment,
+  FORMAT(ifnull(heart,0),0) heart, FORMAT(ifnull(comment,0),0) comment,
          case
     when TIMESTAMPDIFF(Minute, Rev.updatedAt, current_timestamp()) < 60
      then CONCAT(TIMESTAMPDIFF(Minute, Rev.updatedAt, current_timestamp()),'분 전')
@@ -858,7 +883,7 @@ async function selectUserReview(
     when TIMESTAMPDIFF(Day, Rev.updatedAt, current_timestamp()) < 8
      then CONCAT(TIMESTAMPDIFF(Day, Rev.updatedAt, current_timestamp()),'일 전')
     else DATE_FORMAT(Rev.updatedAt, '%Y-%m-%d')
-     end as updatedAt, ifnull(Format(isHeart,0),0) isHeart,ifnull(Format(isStar,0),0) isStar
+     end as updatedAt, ifnull(isHeart,0) isHeart,ifnull(isStar,0) isStar
   `;
 
   if (sort == 1 && lat && long) {
@@ -886,8 +911,8 @@ async function selectUserReview(
   AS distance FROM Restaurant)dis on dis.idx=Res.idx`;
   }
 
-  selectUserReviewQuery += ` where U.idx=? AND U.status = 0 AND Rev.status = 0 AND Res.status = 0 `;
-  console.log(sort);
+  selectUserReviewQuery += ` where U.idx=${userIdx} AND U.status = 0 AND Rev.status = 0 AND Res.status = 0 `;
+
   //지역
   if (typeof area === "object") {
     selectUserReviewQuery += ` AND (0`;
@@ -899,27 +924,40 @@ async function selectUserReview(
     selectUserReviewQuery += ` AND area='${area}'`;
   }
   //음식종류 선택
-  if (typeof food === "object") {
-    selectUserReviewQuery += ` AND (0`;
-    for (var element in food) {
-      selectUserReviewQuery += ` OR type=${food[element]}`;
+  if (food && food != 0) {
+    if (typeof food === "object") {
+      selectUserReviewQuery += ` AND (0`;
+      for (var element in food) {
+        selectUserReviewQuery += ` OR type=${food[element]}`;
+      }
+      selectUserReviewQuery += `)`;
+    } else if (typeof food === "string") {
+      selectUserReviewQuery += ` AND type=${food}`;
     }
-    selectUserReviewQuery += `)`;
-  } else if (typeof food === "string") {
-    selectUserReviewQuery += ` AND type=${food}`;
   }
+
   //가격선택
-  if (typeof price === "object") {
+  if (price && price != 0) {
+    if (typeof price === "object") {
+      selectUserReviewQuery += ` AND (0`;
+      for (var element in food) {
+        selectUserReviewQuery += ` OR price=${price[element]}`;
+      }
+      selectUserReviewQuery += `)`;
+    } else if (typeof price === "string") {
+      selectUserReviewQuery += ` AND price=${price}`;
+    }
+  }
+
+  //만족도
+  if (typeof score === "object") {
     selectUserReviewQuery += ` AND (0`;
-    for (var element in food) {
-      selectUserReviewQuery += ` OR price=${price[element]}`;
+    for (var element in score) {
+      selectUserReviewQuery += ` OR score=${score[element]}`;
     }
     selectUserReviewQuery += `)`;
-  } else if (typeof price === "string") {
-    selectUserReviewQuery += ` AND price=${price}`;
-  }
-  if (parking) {
-    selectUserReviewQuery += ` AND parking=${parking}`;
+  } else if (typeof score === "string") {
+    selectUserReviewQuery += ` AND score=${score}`;
   }
 
   selectUserReviewQuery += ` group by restaurantIdx`;
@@ -940,11 +978,20 @@ async function selectUserReview(
     selectUserReviewQuery += ` LIMIT ${limit * (page - 1)},${limit}`;
   }
   console.log(selectUserReviewQuery);
-  const selectUserVisitedRow = await connection.query(
-    selectUserReviewQuery,
-    userIdx
-  );
-  return selectUserVisitedRow;
+  const selectReviewImgQuery = `select RI.idx reviewImgIdx,imgUrl from ReviewImg RI
+  inner join Review Rev on Rev.idx=RI.reviewIdx
+  where RI.reviewIdx=?`;
+
+  const [reviewRows] = await connection.query(selectUserReviewQuery);
+
+  //리뷰 이미지
+  for (i in reviewRows) {
+    const [reviewImgRows] = await connection.query(selectReviewImgQuery, [
+      reviewRows[i].reviewIdx,
+    ]);
+    reviewRows[i].img = reviewImgRows;
+  }
+  return [reviewRows];
 }
 module.exports = {
   selectUser,

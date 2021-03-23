@@ -251,17 +251,17 @@ module.exports = {
   },
   DISTANCE_NEED_LOCATION: {
     isSuccess: false,
-    code: 2045,
+    code: 2046,
     message: "거리정보는 위치정보가 필요합니다",
   },
   RESTAURANT_SCORE_ERROR_TYPE: {
     isSuccess: false,
-    code: 2046,
+    code: 2047,
     message: "만족도 값이 잘못되었습니다",
   },
   IMAGE_URL_ERROR_TYPE: {
     isSuccess: false,
-    code: 2047,
+    code: 2048,
     message: "이미지 url형식을 확인해주세요",
   },
   // Response error
