@@ -259,6 +259,11 @@ module.exports = {
     code: 2046,
     message: "만족도 값이 잘못되었습니다",
   },
+  IMAGE_URL_ERROR_TYPE: {
+    isSuccess: false,
+    code: 2047,
+    message: "이미지 url형식을 확인해주세요",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,

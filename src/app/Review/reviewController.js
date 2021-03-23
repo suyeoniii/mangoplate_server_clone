@@ -71,6 +71,19 @@ exports.postReview = async function (req, res) {
   if (img && img.length > 30)
     return res.send(response(baseResponse.REVIEW_IMAGE_LENGTH));
 
+  let imgRegex = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+
+  for (i in img) {
+    if (!regex.test(img[i].imgUrl)) {
+      return res.send(response(baseResponse.IMAGE_URL_ERROR_TYPE));
+    }
+  }
+
+  //올바른 url이 맞다면 해당 url로 이동
+  if (regex.test(url)) {
+    location.href = url;
+  }
+
   const postReviewResponse = await reviewService.createReview(
     userIdFromJWT,
     restaurantIdx,
