@@ -284,6 +284,11 @@ module.exports = {
     code: 2052,
     message: "인증코드는 4자리로 입력해주세요",
   },
+  SEARCH_QUERY_EMPTY: {
+    isSuccess: false,
+    code: 2053,
+    message: "검색 키워드를 입력해주세요",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,

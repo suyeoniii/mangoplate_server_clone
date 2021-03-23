@@ -34,8 +34,8 @@ exports.getRestaurants = async function (req, res) {
     lat,
     long,
   } = req.query;
-
-  var distance = 0;
+  var distance = req.query.distance;
+  if (!distance) distance = 0;
 
   //위치정보 받은 경우
   if (!area && lat && long) {
@@ -297,4 +297,92 @@ exports.patchVisitedStatus = async function (req, res) {
     visitedIdx
   );
   return res.send(patchVisitedResponse);
+};
+/**
+ * API No.
+ * API Name : 검색 API
+ * [PATCH] /app/restaurants/search
+ */
+exports.getSearch = async function (req, res) {
+  /**
+   * Query String : q, area, sort, category, food, price, parking, page, limit, lat, long
+   */
+  const token = req.headers["x-access-token"] || req.query.token;
+  var userIdFromJWT;
+
+  const {
+    area,
+    sort,
+    category,
+    food,
+    price,
+    parking,
+    page,
+    limit,
+    lat,
+    long,
+  } = req.query;
+
+  var q = req.query.q;
+
+  if (!q) {
+    return res.send(errResponse(baseResponse.SEARCH_QUERY_EMPTY));
+  }
+  q = q.split(" ");
+
+  //토큰 받은 경우
+  if (token) {
+    jwt.verify(token, secret_config.jwtsecret, (err, verifiedToken) => {
+      if (verifiedToken) {
+        userIdFromJWT = verifiedToken.userIdx;
+      }
+    });
+    if (!userIdFromJWT) {
+      return res.send(errResponse(baseResponse.TOKEN_VERIFICATION_FAILURE));
+    }
+  }
+
+  if (sort > 3 || sort < 0)
+    return res.send(response(baseResponse.RESTAURANT_SORT_ERROR_TYPE));
+  if (category > 2 || category < 0)
+    return res.send(response(baseResponse.RESTAURANT_CATEGORY_ERROR_TYPE));
+  if ((category == 1 || category == 2) && !token)
+    return res.send(response(baseResponse.TOKEN_EMPTY));
+
+  if (typeof food === "string") {
+    if (food > 8 || food < 0)
+      return res.send(response(baseResponse.RESTAURANT_FOOD_ERROR_TYPE));
+  } else {
+    for (var element in food) {
+      if (food[element] > 8 || food[element] < 0)
+        return res.send(response(baseResponse.RESTAURANT_FOOD_ERROR_TYPE));
+    }
+  }
+  if (typeof price === "string") {
+    if (price > 4 || price < 0)
+      return res.send(response(baseResponse.RESTAURANT_PRICE_ERROR_TYPE));
+  } else {
+    for (var element in price) {
+      if (price[element] > 4 || price[element] < 0)
+        return res.send(response(baseResponse.RESTAURANT_PRICE_ERROR_TYPE));
+    }
+  }
+  if (parking > 2 || parking < 0)
+    return res.send(response(baseResponse.RESTAURANT_PARKING_ERROR_TYPE));
+
+  const restaurantListResult = await restaurantProvider.retrieveRestaurantSearch(
+    userIdFromJWT,
+    q,
+    area,
+    sort,
+    category,
+    food,
+    price,
+    parking,
+    page,
+    limit,
+    lat,
+    long
+  );
+  return res.send(response(baseResponse.SUCCESS, restaurantListResult));
 };

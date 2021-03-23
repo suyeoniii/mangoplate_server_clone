@@ -376,6 +376,156 @@ async function deleteStarStatus(connection, userIdx, restaurantIdx) {
   ]);
   return starRows[0];
 }
+async function selectRestaurantSearch(
+  connection,
+  userIdx,
+  q,
+  area,
+  sort,
+  category,
+  food,
+  price,
+  parking,
+  page,
+  limit,
+  lat,
+  long
+) {
+  var selectRestaurantListQuery = `
+  select Res.idx,imgUrl, restaurantName, area, FORMAT(views, 0) views, FORMAT(reviews, 0) reviews, score`;
+
+  if (lat && long) {
+    selectRestaurantListQuery += `,case when distance < 1
+  then Concat(Round(distance*1000,0),'m')
+             when distance >=1 then Concat(distance,'km')
+  end as distance`;
+  }
+  if (userIdx) {
+    selectRestaurantListQuery += `,ifnull(isStar, 0) isStar, ifnull(isVisited, 0) isVisited`;
+  }
+
+  selectRestaurantListQuery += ` from Restaurant Res
+  inner join (select Round(sum(new_score)/count(*), 1) as score,count(*) as reviews, Rev.idx, Rev.restaurantIdx resIdx
+  from Review Rev
+      inner join (select
+      case
+      when Rev.score = 0 then 5
+      when Rev.score = 1 then 3
+      when Rev.score = 2 then 1
+  end as new_score, Rev.idx idx
+  from Review Rev) as Score on Score.idx=Rev.idx
+  group by Rev.restaurantIdx) as new_Rev on new_Rev.resIdx = Res.idx
+  inner join (select imgUrl imgUrl, Res.idx idx
+  from ReviewImg RI
+      inner join Review Rev on Rev.idx=RI.reviewIdx
+      inner join Restaurant Res on Res.idx=Rev.restaurantIdx
+  ORDER BY Rev.createdAt) RIs on RIs.idx=Res.idx`;
+
+  if (lat && long) {
+    selectRestaurantListQuery += ` inner join (SELECT idx,
+    Round((6371*acos(cos(radians(${lat}))*cos(radians(lati))*cos(radians(longi)
+    -radians(${long}))+sin(radians(${lat}))*sin(radians(lati)))),2)
+    AS distance FROM Restaurant`;
+
+    selectRestaurantListQuery += `)dis on dis.idx=Res.idx`;
+  }
+  if (category == 1) {
+    //가고싶다
+    selectRestaurantListQuery += ` inner join (select Res.idx idx
+      from Star S
+          inner join Restaurant Res on Res.idx=S.restaurantIdx
+      where S.userIdx=${userIdx}) St on St.idx=Res.idx`;
+  } else if (category == 2) {
+    //가봤어요
+    selectRestaurantListQuery += ` inner join (select Res.idx idx
+      from Visited V
+          inner join Restaurant Res on Res.idx=V.restaurantIdx
+      where V.userIdx=${userIdx}) Vi on Vi.idx=Res.idx`;
+  }
+
+  if (userIdx) {
+    selectRestaurantListQuery += `
+    left outer join
+    (select count(*) isStar, restaurantIdx from Star where userIdx=${userIdx} AND status=0 group by restaurantIdx)
+    ST on ST.restaurantIdx=Res.idx
+    left outer join
+          (select count(*) isVisited, restaurantIdx from Visited where userIdx=${userIdx} AND status=0 group by restaurantIdx)
+    VI on VI.restaurantIdx=Res.idx`;
+  }
+
+  if (q) {
+    selectRestaurantListQuery += ` left outer join (select tagName, restaurantIdx idx from Tag  T inner join RestaurantTag RT on T.idx=RT.tagIdx)
+    T on T.idx=Res.idx`;
+  }
+
+  selectRestaurantListQuery += ` where 1`;
+  //지역
+  if (typeof area === "object") {
+    selectRestaurantListQuery += ` AND (0`;
+    for (var element in area) {
+      selectRestaurantListQuery += ` OR area='${area[element]}'`;
+    }
+    selectRestaurantListQuery += `)`;
+  } else if (typeof area === "string") {
+    selectRestaurantListQuery += ` AND area='${area}'`;
+  }
+  //음식종류 선택
+  if (food != "0" && food) {
+    if (typeof food === "object") {
+      selectRestaurantListQuery += ` AND (0`;
+      for (var element in food) {
+        selectRestaurantListQuery += ` OR type=${food[element]}`;
+      }
+      selectRestaurantListQuery += `)`;
+    } else if (typeof food === "string") {
+      selectRestaurantListQuery += ` AND type=${food}`;
+    }
+  }
+
+  //가격선택
+  if (price != "0" && price) {
+    if (typeof price === "object") {
+      selectRestaurantListQuery += ` AND (0`;
+      for (var element in food) {
+        selectRestaurantListQuery += ` OR price=${price[element]}`;
+      }
+      selectRestaurantListQuery += `)`;
+    } else if (typeof price === "string") {
+      selectRestaurantListQuery += ` AND price=${price}`;
+    }
+  }
+  if (parking) {
+    selectRestaurantListQuery += ` AND parking=${parking}`;
+  }
+
+  for (var element in q) {
+    selectRestaurantListQuery += ` AND (restaurantName Like '%${q[element]}%' OR area Like '%${q[element]}%' OR tagName Like '%${q[element]}%')`;
+  }
+
+  selectRestaurantListQuery += ` GROUP BY Res.idx`;
+  if (!sort || sort == 0) {
+    selectRestaurantListQuery += ` ORDER BY score DESC`;
+  } else if (sort == 1) {
+    selectRestaurantListQuery += ` ORDER BY views DESC`;
+  } else if (sort == 2) {
+    selectRestaurantListQuery += ` ORDER BY reviews DESC`;
+  } else if (sort == 3) {
+    selectRestaurantListQuery += ` ORDER BY dis.distance`;
+  }
+  if (!limit) {
+    limit = 20;
+  }
+  if (!page) {
+    page = 1;
+  }
+  if (page) {
+    selectRestaurantListQuery += ` LIMIT ${limit * (page - 1)},${limit}`;
+  }
+  console.log(selectRestaurantListQuery);
+  const [restaurantRows] = await connection.query(selectRestaurantListQuery);
+  return restaurantRows;
+}
+
 module.exports = {
   selectRestaurantList,
   selectRestaurant,
@@ -391,4 +541,5 @@ module.exports = {
   updateVisited,
   updateVisitedStatus,
   deleteStarStatus,
+  selectRestaurantSearch,
 };

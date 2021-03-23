@@ -33,6 +33,8 @@ module.exports = function (app) {
     jwtMiddleware,
     restaurant.patchVisitedStatus
   );
+  //검색
+  app.get("/app/search", restaurant.getSearch);
 
   //맛집 이미지 상세조회
   //app.get("/app/restaurants/:restaurantIdx/", restaurant.getRestaurantsById);

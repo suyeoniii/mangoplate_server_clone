@@ -105,3 +105,45 @@ exports.retrieveVisitedById = async function (visited) {
   connection.release();
   return visitedResult;
 };
+exports.retrieveRestaurantSearch = async function (
+  userIdx,
+  q,
+  area,
+  sort,
+  category,
+  food,
+  price,
+  parking,
+  page,
+  limit,
+  lat,
+  long
+) {
+  if (userIdx) {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const userIdCheckResult = await userDao.selectUserId(connection, userIdx);
+    connection.release();
+
+    if (userIdCheckResult.length < 1)
+      return errResponse(baseResponse.USER_ID_NOT_EXIST);
+  }
+
+  const connection = await pool.getConnection(async (conn) => conn);
+  const restaurantListResult = await restaurantDao.selectRestaurantSearch(
+    connection,
+    userIdx,
+    q,
+    area,
+    sort,
+    category,
+    food,
+    price,
+    parking,
+    page,
+    limit,
+    lat,
+    long
+  );
+  connection.release();
+  return restaurantListResult;
+};
