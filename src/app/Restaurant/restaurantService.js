@@ -148,20 +148,34 @@ exports.createVisited = async function (
 
     //insert
     const connection = await pool.getConnection(async (conn) => conn);
+
+    await connection.beginTransaction();
+
     const visitedResult = await restaurantDao.insertVisited(
       connection,
       userIdx,
       restaurantIdx,
       contents,
-      isPrivate,
-      isStar
+      isPrivate
     );
+
+    if (isStar) {
+      const starResult = await restaurantDao.deleteStarStatus(
+        connection,
+        userIdx,
+        restaurantIdx
+      );
+    }
+
+    await connection.commit();
+
     connection.release();
     return response(baseResponse.SUCCESS, {
       visitedIdx: visitedResult.insertId,
     });
   } catch (err) {
     logger.error(`App - createVisited Service error\n: ${err.message}`);
+    await connection.rollback();
     return errResponse(baseResponse.DB_ERROR);
   }
 };

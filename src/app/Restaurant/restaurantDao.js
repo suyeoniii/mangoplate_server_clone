@@ -355,34 +355,19 @@ async function insertVisited(
   userIdx,
   restaurantIdx,
   contents,
-  isPrivate,
-  isStar
+  isPrivate
 ) {
-  try {
-    //가봤어요 추가
-    const insertVisitedQuery = `INSERT INTO Visited(userIdx,restaurantIdx,contents,isPrivate) VALUES(?,?,?,?)`;
-    await connection.beginTransaction();
+  //가봤어요 추가
+  const insertVisitedQuery = `INSERT INTO Visited(userIdx,restaurantIdx,contents,isPrivate) VALUES(?,?,?,?)`;
 
-    const restaurantRows = await connection.query(insertVisitedQuery, [
-      userIdx,
-      restaurantIdx,
-      contents,
-      isPrivate,
-    ]);
-    if (isStar) {
-      //가고싶다 삭제
-      const updateStarQuery = `UPDATE Star SET status=1 WHERE userIdx=? and restaurantIdx=?`;
-      const starsRows = await connection.query(updateStarQuery, [
-        userIdx,
-        restaurantIdx,
-      ]);
-    }
+  const restaurantRows = await connection.query(insertVisitedQuery, [
+    userIdx,
+    restaurantIdx,
+    contents,
+    isPrivate,
+  ]);
 
-    await connection.commit();
-    return restaurantRows[0];
-  } catch (err) {
-    await connection.rollback();
-  }
+  return restaurantRows[0];
 }
 async function updateVisited(connection, visitedIdx, contents, isPrivate) {
   const updateVisitedQuery = `UPDATE Visited SET contents=?, isPrivate=? where idx=?`;
@@ -400,6 +385,15 @@ async function updateVisitedStatus(connection, visitedIdx) {
   const visitedRows = await connection.query(updateVisitedQuery, [visitedIdx]);
   return visitedRows[0];
 }
+async function deleteStarStatus(connection, userIdx, restaurantIdx) {
+  const updateStarStatusQuery = `UPDATE Star SET status=1 WHERE userIdx=? and restaurantIdx=?`;
+
+  const starRows = await connection.query(updateStarStatusQuery, [
+    userIdx,
+    restaurantIdx,
+  ]);
+  return starRows[0];
+}
 module.exports = {
   selectRestaurantList,
   selectRestaurant,
@@ -414,4 +408,5 @@ module.exports = {
   selectVisitedById,
   updateVisited,
   updateVisitedStatus,
+  deleteStarStatus,
 };
