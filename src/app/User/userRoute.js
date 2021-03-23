@@ -44,6 +44,12 @@ module.exports = function (app) {
   //사용자 리뷰 조회
   app.get("/app/users/:userIdx/review", user.getUserReview);
 
+  //인증문자 전송
+  app.post("/app/users/sms-send", user.postPhoneCheck);
+
+  //휴대폰인증
+  app.post("/app/users/sms-verify", user.phoneCheck);
+
   // 회원 정보 수정 API (JWT 검증 및 Validation - 메소드 체이닝 방식으로 jwtMiddleware 사용)
   //app.patch('/app/users/:userId', jwtMiddleware, user.patchUsers)
 };

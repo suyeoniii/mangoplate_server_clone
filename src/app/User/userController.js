@@ -5,7 +5,9 @@ const baseResponse = require("../../../config/baseResponseStatus");
 const secret_config = require("../../../config//secret");
 const { response, errResponse } = require("../../../config/response");
 const { smtpTransport } = require("../../../config/email.js");
-var request = require("request");
+const request = require("request");
+const crypto = require("crypto");
+const cache = require("memory-cache");
 const jwt = require("jsonwebtoken");
 
 const regexEmail = require("regex-email");
@@ -725,4 +727,109 @@ exports.getUserReview = async function (req, res) {
     );
     return res.send(response(baseResponse.SUCCESS, getUserResponse));
   }
+};
+
+/**
+ * API No. 인증문자 전송
+ * [POST] /app/users/phone-check
+ */
+exports.postPhoneCheck = async function (req, res) {
+  const { userIdx, phone } = req.body;
+
+  if (!userIdx) return res.send(response(baseResponse.USER_USERID_EMPTY));
+  if (!phone) return res.send(response(baseResponse.USER_PHONE_EMPTY));
+
+  //번호 정규표현식 체크
+  var regPhone = /^01([0|1|6|7|8|9]?)-?([0-9]{3,4})-?([0-9]{4})$/;
+  if (!regPhone.test(phone))
+    return res.send(response(baseResponse.SIGNUP_PHONE_ERROR_TYPE));
+
+  const number = Math.floor(Math.random() * (9999 - 1000)) + 1000;
+
+  cache.del(phone);
+  cache.put(phone, number);
+
+  console.log(cache.get(phone));
+
+  const space = " "; // one space
+  const newLine = "\n"; // new line
+  const method = "POST"; // method
+  const serviceId = "ncp:sms:kr:264951710739:mangoplate_mock";
+  const url = `https://sens.apigw.ntruss.com/sms/v2/services/${serviceId}/messages`;
+  const url2 = `/sms/v2/services/${serviceId}/messages`;
+  const timestamp = Date.now().toString();
+  let message = [];
+  let hmac = crypto.createHmac("sha256", secret_config.SENSAPI_serviceSecret);
+
+  message.push(method);
+  message.push(space);
+  message.push(url2);
+  message.push(newLine);
+  message.push(timestamp);
+  message.push(newLine);
+  message.push(secret_config.SENSAPI_AccessKeyId);
+  const signature = hmac.update(message.join("")).digest("base64");
+
+  try {
+    request({
+      method: method,
+      json: true,
+      uri: url,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "x-ncp-iam-access-key": secret_config.SENSAPI_AccessKeyId,
+        "x-ncp-apigw-timestamp": timestamp,
+        "x-ncp-apigw-signature-v2": signature.toString(),
+      },
+      body: {
+        type: "SMS",
+        contentType: "COMM",
+        countryCode: "82",
+        from: secret_config.SENSAPI_phone,
+        content: `망고플레이트 인증번호 ${number}입니다.`,
+        messages: [
+          {
+            to: `${phone}`,
+          },
+        ],
+      },
+    });
+    return res.send(response(baseResponse.SUCCESS));
+  } catch (err) {
+    cache.del(phone);
+    return res.send(response(baseResponse.SUCCESS));
+  }
+};
+/** 인증문자 검증
+ * [POST] /app/users/phone-check
+ */
+exports.phoneCheck = async function (req, res) {
+  //const userIdResult = req.verifiedToken.userId;
+
+  const { phone, verifyCode } = req.body;
+
+  if (!phone) return res.send(response(baseResponse.USER_PHONE_EMPTY));
+  if (!verifyCode)
+    return res.send(response(baseResponse.PHONE_VEFIRY_CODE_EMPTY));
+  if (verifyCode >= 10000)
+    return res.send(response(baseResponse.PHONE_VEFIRY_CODE_LENGTH));
+
+  //번호 정규표현식 체크
+  var regPhone = /^01([0|1|6|7|8|9]?)-?([0-9]{3,4})-?([0-9]{4})$/;
+  if (!regPhone.test(phone))
+    return res.send(response(baseResponse.SIGNUP_PHONE_ERROR_TYPE));
+
+  const CacheData = cache.get(phone);
+
+  if (!CacheData) {
+    res.send(response(baseResponse.SMS_NOT_MATCH));
+  }
+
+  if (CacheData != verifyCode) {
+    res.send(response(baseResponse.SMS_NOT_MATCH));
+  }
+
+  cache.del(phone);
+
+  return res.send(response(baseResponse.SUCCESS));
 };

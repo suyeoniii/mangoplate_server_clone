@@ -264,6 +264,26 @@ module.exports = {
     code: 2048,
     message: "이미지 url형식을 확인해주세요",
   },
+  USER_PHONE_EMPTY: {
+    isSuccess: false,
+    code: 2049,
+    message: "휴대폰번호를 입력해주세요",
+  },
+  SMS_NOT_MATCH: {
+    isSuccess: false,
+    code: 2050,
+    message: "인증코드가 일치하지 않습니다",
+  },
+  PHONE_VEFIRY_CODE_EMPTY: {
+    isSuccess: false,
+    code: 2051,
+    message: "인증코드를 입력해주세요",
+  },
+  PHONE_VEFIRY_CODE_LENGTH: {
+    isSuccess: false,
+    code: 2052,
+    message: "인증코드는 4자리로 입력해주세요",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,
@@ -363,4 +383,9 @@ module.exports = {
   //Connection, Transaction 등의 서버 오류
   DB_ERROR: { isSuccess: false, code: 4000, message: "데이터 베이스 에러" },
   SERVER_ERROR: { isSuccess: false, code: 4001, message: "서버 에러" },
+  SMS_ERROR: {
+    isSuccess: false,
+    code: 4003,
+    message: "인증문자 발송에 실패했습니다",
+  },
 };

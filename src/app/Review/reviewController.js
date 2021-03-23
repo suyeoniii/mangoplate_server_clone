@@ -74,7 +74,7 @@ exports.postReview = async function (req, res) {
   let imgRegex = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
 
   for (i in img) {
-    if (!regex.test(img[i].imgUrl)) {
+    if (!imgRegex.test(img[i].imgUrl)) {
       return res.send(response(baseResponse.IMAGE_URL_ERROR_TYPE));
     }
   }
