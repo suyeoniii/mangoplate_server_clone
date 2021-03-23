@@ -191,8 +191,8 @@ left outer join (select MAX(updatedAt) menuUpdatedAt,restaurantIdx from
   }
   selectRestaurantQuery += ` where Res.idx=${restaurantIdx};`;
 
-  var selectReviewListQuery = `select Rev.idx reviewIdx, Rev.userIdx, U.nickname,U.profileImg, Rev.score, Rev.contents, reviews, follower
-  , heart, comment, DATE_FORMAT(Rev.updatedAt, '%Y-%m-%d') updatedAt`;
+  var selectReviewListQuery = `select Rev.idx reviewIdx, Rev.userIdx, U.nickname,U.profileImg, Rev.score, Rev.contents, FORMAT(reviews, 0) reviews, FORMAT(follower, 0) follower
+  , FORMAT(heart, 0) heart,  FORMAT(comment, 0) comment, DATE_FORMAT(Rev.updatedAt, '%Y-%m-%d') updatedAt`;
 
   if (userIdx) {
     selectReviewListQuery += `,isHeart`;
@@ -212,7 +212,7 @@ left outer join (select MAX(updatedAt) menuUpdatedAt,restaurantIdx from
   selectReviewListQuery += ` reviewIdx from Heart group by reviewIdx) Heart on Heart.reviewIdx=Rev.idx
   where Res.idx=${restaurantIdx} limit 3;`;
 
-  const selectMenuQuery = `select menuName, price menuPrice, isBest from RestaurantMenu RM
+  const selectMenuQuery = `select menuName, FORMAT(price, 0) menuPrice, isBest from RestaurantMenu RM
   where restaurantIdx=? order by isBest;`;
 
   const selectMenuImgQuery = `select idx menuImgIdx, imgUrl from MenuImg where restaurantIdx=?;
