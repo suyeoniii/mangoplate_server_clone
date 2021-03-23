@@ -91,7 +91,7 @@ async function selectRestaurantList(
     selectRestaurantListQuery += ` AND area='${area}'`;
   }
   //음식종류 선택
-  if (!food) {
+  if (food != "0" && food) {
     if (typeof food === "object") {
       selectRestaurantListQuery += ` AND (0`;
       for (var element in food) {
