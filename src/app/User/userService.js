@@ -282,6 +282,7 @@ exports.createNaverUser = async function (email, nickname, phone, profile_img) {
       } // 유효 기간 365일
     );
     const loginParams = [token, userIdx];
+    const loginRows = await userProvider.loginCheck(userIdx);
     if (loginRows[0].length < 1) {
       //insert
       const connection = await pool.getConnection(async (conn) => conn);
