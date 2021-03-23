@@ -350,6 +350,12 @@ module.exports = {
     code: 3017,
     message: "댓글 작성자 idx와 로그인유저의 idx가 일치하지 않습니다",
   },
+  USER_LOGIN_EMPTY: {
+    isSuccess: false,
+    code: 3018,
+    message: "로그인 상태가 아닙니다",
+  },
+
   //Connection, Transaction 등의 서버 오류
   DB_ERROR: { isSuccess: false, code: 4000, message: "데이터 베이스 에러" },
   SERVER_ERROR: { isSuccess: false, code: 4001, message: "서버 에러" },

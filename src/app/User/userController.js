@@ -329,9 +329,6 @@ exports.autoLogin = async function (req, res) {
 exports.logout = async function (req, res) {
   const userIdFromJWT = req.verifiedToken.userIdx;
 
-  console.log(req.verifiedToken);
-  console.log(req.verifiedToken.userIdx);
-
   const logoutResponse = await userService.patchJwtStatus(userIdFromJWT);
 
   return res.send(logoutResponse);

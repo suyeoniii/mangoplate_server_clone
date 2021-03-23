@@ -146,11 +146,18 @@ exports.postAutoSignIn = async function (userIdx) {
   try {
     // 계정 상태 확인
     const userInfoRows = await userProvider.retrieveUser(userIdx);
-
     if (userInfoRows.length < 1)
-      return errResponse(baseResponse.USER_NOT_EXIST);
+      return errResponse(baseResponse.USER_ID_NOT_EXIST);
     if (userInfoRows.status === 1)
       return errResponse(baseResponse.SIGNIN_WITHDRAWAL_ACCOUNT);
+
+    //로그인 테이블 확인
+    const loginRows = await userProvider.retrieveLogin(userIdx);
+
+    if (loginRows[0].length < 1)
+      return errResponse(baseResponse.USER_LOGIN_EMPTY);
+    if (loginRows[0][0].status === 1)
+      return errResponse(baseResponse.USER_LOGIN_EMPTY);
 
     //토큰 생성 Service
     let token = await jwt.sign(
@@ -234,9 +241,10 @@ exports.patchJwtStatus = async function (userIdx) {
   try {
     // jwt table status update
     const loginUserRows = await userProvider.loginCheck(userIdx);
+
     if (loginUserRows[0].length < 1)
       return errResponse(baseResponse.LOGIN_NOT_EXIST);
-    if (loginUserRows[0].status === 1)
+    if (loginUserRows[0][0].status === 1)
       return errResponse(baseResponse.LOGIN_NOT_EXIST);
 
     const connection = await pool.getConnection(async (conn) => conn);

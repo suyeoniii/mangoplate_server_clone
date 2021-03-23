@@ -294,3 +294,10 @@ exports.retrieveMyReview = async function (
 
   return userResult[0];
 };
+exports.retrieveLogin = async function (userIdx) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const loginResult = await userDao.selectLoginUser(connection, userIdx);
+  connection.release();
+
+  return loginResult;
+};
