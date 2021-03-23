@@ -104,14 +104,16 @@ async function selectRestaurantList(
   }
 
   //가격선택
-  if (typeof price === "object") {
-    selectRestaurantListQuery += ` AND (0`;
-    for (var element in food) {
-      selectRestaurantListQuery += ` OR price=${price[element]}`;
+  if (price != "0" && price) {
+    if (typeof price === "object") {
+      selectRestaurantListQuery += ` AND (0`;
+      for (var element in food) {
+        selectRestaurantListQuery += ` OR price=${price[element]}`;
+      }
+      selectRestaurantListQuery += `)`;
+    } else if (typeof price === "string") {
+      selectRestaurantListQuery += ` AND price=${price}`;
     }
-    selectRestaurantListQuery += `)`;
-  } else if (typeof price === "string") {
-    selectRestaurantListQuery += ` AND price=${price}`;
   }
   if (parking) {
     selectRestaurantListQuery += ` AND parking=${parking}`;
