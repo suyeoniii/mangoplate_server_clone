@@ -33,8 +33,9 @@ exports.getRestaurants = async function (req, res) {
     limit,
     lat,
     long,
-    distance,
   } = req.query;
+
+  var distance = 0;
 
   //위치정보 받은 경우
   if (!area && lat && long) {
