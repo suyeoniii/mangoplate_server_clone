@@ -178,7 +178,7 @@ async function insertLoginUser(connection, updateJwtTokenParams) {
 //마이페이지 조회
 async function selectUserInfo(connection, userIdx) {
   const selectUserInfoQuery = `select U.idx userIdx, U.profileImg, U.nickname,
-  ifnull(follower,0) follower, ifnull(following,0) following, ifnull(reviews,0) reviews, ifnull(visited,0) visited,ifnull(photos,0) photos, ifnull(star,0) star
+  FORMAT(ifnull(follower,0),0) follower, FORMAT(ifnull(following,0),0) following, FORMAT(ifnull(reviews,0),0) reviews, FORMAT(ifnull(visited,0),0) visited,FORMAT(ifnull(photos,0),0) photos, FORMAT(ifnull(star,0),0) star
 from User U
 left outer join (select count(*) follower ,followIdx from Follow where status=0 group by followIdx) Fer on Fer.followIdx=U.idx
 left outer join (select count(*) following ,followerIdx from Follow where status=0 group by followerIdx) Fin on Fin.followerIdx=U.idx
@@ -195,13 +195,13 @@ left outer join (select ST.userIdx,count(*) star from Star ST where ST.status=0 
 //프로필 조회
 async function selectUserProfile(connection, userIdx, userIdFromJWT) {
   var selectUserInfoQuery = `select U.idx userIdx, U.profileImg, U.nickname,
-  ifnull(follower,0) follower, ifnull(following,0) following`;
+  FORMAT(ifnull(follower,0),0) follower, FORMAT(ifnull(following,0),0) following`;
 
   if (userIdFromJWT) {
     selectUserInfoQuery += `, ifnull(isFollow, 0) isFollow `;
   }
 
-  selectUserInfoQuery += `,ifnull(reviews,0) reviews, ifnull(visited,0) visited,ifnull(photos,0) photos, ifnull(star,0) star
+  selectUserInfoQuery += `,FORMAT(ifnull(reviews,0),0) reviews, FORMAT(ifnull(visited,0),0) visited,FORMAT(ifnull(photos,0),0) photos, FORMAT(ifnull(star,0),0) star
   from User U
   left outer join (select count(*) follower ,followIdx from Follow where status=0 group by followIdx) Fer on Fer.followIdx=U.idx
   left outer join (select count(*) following ,followerIdx from Follow where status=0 group by followerIdx) Fin on Fin.followerIdx=U.idx

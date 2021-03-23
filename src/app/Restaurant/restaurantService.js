@@ -36,13 +36,49 @@ exports.addRestaurantViews = async function (restaurantIdx) {
     return errResponse(baseResponse.DB_ERROR);
   }
 };
+//가고싶다 메모 등록, 수정
+exports.updateStars = async function (userIdx, restaurantIdx, contents) {
+  try {
+    //userIdx 확인
+    const userRows = await userProvider.retrieveUser(userIdx);
+    if (userRows.length < 1) return errResponse(baseResponse.USER_ID_NOT_EXIST);
+
+    //restaurantIdx 확인
+    const restaurantRows = await restaurantProvider.restaurantCheck(
+      restaurantIdx
+    );
+    if (restaurantRows.length < 1)
+      return errResponse(baseResponse.RESTAURANT_ID_NOT_EXIST);
+
+    //star 테이블 확인
+    const starRows = await restaurantProvider.retrieveStar(
+      restaurantIdx,
+      userIdx
+    );
+    console.log(starRows.length);
+    if (starRows.length < 1) {
+      return errResponse(baseResponse.STAR_NOT_EXIST);
+    }
+    if (starRows[0].status === 1) {
+      return errResponse(baseResponse.STAR_NOT_EXIST);
+    }
+    //content
+    const connection = await pool.getConnection(async (conn) => conn);
+    const starResult = await restaurantDao.updateStarContent(
+      connection,
+      userIdx,
+      restaurantIdx,
+      contents
+    );
+    connection.release();
+    return response(baseResponse.SUCCESS, { status: true });
+  } catch (err) {
+    logger.error(`App - createStar Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};
 //가고싶다 등록, 수정
-exports.updateStars = async function (
-  userIdx,
-  restaurantIdx,
-  contents,
-  status
-) {
+exports.updateStarStatus = async function (userIdx, restaurantIdx) {
   try {
     //userIdx 확인
     const userRows = await userProvider.retrieveUser(userIdx);
@@ -66,44 +102,27 @@ exports.updateStars = async function (
       const starResult = await restaurantDao.insertStar(
         connection,
         userIdx,
-        restaurantIdx,
-        contents,
-        status
+        restaurantIdx
       );
       connection.release();
       return response(baseResponse.SUCCESS, {
-        starIdx: starResult[0].insertId,
+        status: 0,
       });
     } else {
       //update
-      if (status) {
-        //status
-        const connection = await pool.getConnection(async (conn) => conn);
-        const starResult = await restaurantDao.updateStarStatus(
-          connection,
-          userIdx,
-          restaurantIdx,
-          contents,
-          status
-        );
-        connection.release();
-        return response(baseResponse.SUCCESS, { starIdx: starRows[0].idx });
-      } else {
-        //content
-        const connection = await pool.getConnection(async (conn) => conn);
-        const starResult = await restaurantDao.updateStarContent(
-          connection,
-          userIdx,
-          restaurantIdx,
-          contents,
-          status
-        );
-        connection.release();
-        return response(baseResponse.SUCCESS, { starIdx: starRows[0].idx });
-      }
-    }
 
-    return response({ starIdx: starRows[0].idx });
+      var status = starRows[0].status;
+      //등록/해제
+      const connection = await pool.getConnection(async (conn) => conn);
+      const starResult = await restaurantDao.updateStarStatus(
+        connection,
+        userIdx,
+        restaurantIdx,
+        !status
+      );
+      connection.release();
+      return response(baseResponse.SUCCESS, { status: !status });
+    }
   } catch (err) {
     logger.error(`App - createStar Service error\n: ${err.message}`);
     return errResponse(baseResponse.DB_ERROR);

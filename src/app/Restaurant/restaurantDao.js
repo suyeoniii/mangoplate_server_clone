@@ -278,7 +278,7 @@ async function updateRestaurantViews(connection, restaurantIdx) {
   return restaurantRows[0];
 }
 async function selectStar(connection, restaurantIdx, userIdx) {
-  const selectStarQuery = `select idx from Star where restaurantIdx=? AND userIdx=?;`;
+  const selectStarQuery = `select idx,status from Star where restaurantIdx=? AND userIdx=?;`;
 
   const restaurantRows = await connection.query(selectStarQuery, [
     restaurantIdx,
@@ -286,29 +286,16 @@ async function selectStar(connection, restaurantIdx, userIdx) {
   ]);
   return restaurantRows[0];
 }
-async function insertStar(
-  connection,
-  userIdx,
-  restaurantIdx,
-  contents,
-  status
-) {
-  const insertStarQuery = `INSERT INTO Star(userIdx, restaurantIdx, contents) VALUES(?, ?, ?);`;
+async function insertStar(connection, userIdx, restaurantIdx, contents) {
+  const insertStarQuery = `INSERT INTO Star(userIdx, restaurantIdx) VALUES(?, ?);`;
 
   const restaurantRows = await connection.query(insertStarQuery, [
     userIdx,
     restaurantIdx,
-    contents,
   ]);
   return restaurantRows;
 }
-async function updateStarContent(
-  connection,
-  userIdx,
-  restaurantIdx,
-  contents,
-  status
-) {
+async function updateStarContent(connection, userIdx, restaurantIdx, contents) {
   const updateStarContentQuery = `UPDATE Star SET contents=? where userIdx=? AND restaurantIdx=?`;
 
   const restaurantRows = await connection.query(updateStarContentQuery, [
@@ -318,16 +305,11 @@ async function updateStarContent(
   ]);
   return restaurantRows;
 }
-async function updateStarStatus(
-  connection,
-  userIdx,
-  restaurantIdx,
-  contents,
-  status
-) {
-  const updateStarStatusQuery = `UPDATE Star SET status=1 where userIdx=? AND restaurantIdx=?`;
+async function updateStarStatus(connection, userIdx, restaurantIdx, status) {
+  const updateStarStatusQuery = `UPDATE Star SET status=? where userIdx=? AND restaurantIdx=?`;
 
   const restaurantRows = await connection.query(updateStarStatusQuery, [
+    status,
     userIdx,
     restaurantIdx,
   ]);

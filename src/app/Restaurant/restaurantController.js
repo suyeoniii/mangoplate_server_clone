@@ -201,18 +201,27 @@ exports.postStar = async function (req, res) {
    */
   const userIdFromJWT = req.verifiedToken.userIdx;
   const restaurantIdx = req.params.restaurantIdx;
-  const { contents, status } = req.body;
+  const { contents } = req.body;
 
   if (!restaurantIdx)
     return res.send(response(baseResponse.RESTAURANT_ID_EMPTY));
 
-  const postStarResponse = await restaurantService.updateStars(
-    userIdFromJWT,
-    restaurantIdx,
-    contents,
-    status
-  );
-  return res.send(postStarResponse);
+  //메모 등록
+  if (contents) {
+    const postStarResponse = await restaurantService.updateStars(
+      userIdFromJWT,
+      restaurantIdx,
+      contents
+    );
+    return res.send(postStarResponse);
+  } else {
+    //등록/해제
+    const postStarResponse = await restaurantService.updateStarStatus(
+      userIdFromJWT,
+      restaurantIdx
+    );
+    return res.send(postStarResponse);
+  }
 };
 
 /**
