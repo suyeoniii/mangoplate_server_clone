@@ -91,15 +91,18 @@ async function selectRestaurantList(
     selectRestaurantListQuery += ` AND area='${area}'`;
   }
   //음식종류 선택
-  if (typeof food === "object") {
-    selectRestaurantListQuery += ` AND (0`;
-    for (var element in food) {
-      selectRestaurantListQuery += ` OR type=${food[element]}`;
+  if (!food) {
+    if (typeof food === "object") {
+      selectRestaurantListQuery += ` AND (0`;
+      for (var element in food) {
+        selectRestaurantListQuery += ` OR type=${food[element]}`;
+      }
+      selectRestaurantListQuery += `)`;
+    } else if (typeof food === "string") {
+      selectRestaurantListQuery += ` AND type=${food}`;
     }
-    selectRestaurantListQuery += `)`;
-  } else if (typeof food === "string") {
-    selectRestaurantListQuery += ` AND type=${food}`;
   }
+
   //가격선택
   if (typeof price === "object") {
     selectRestaurantListQuery += ` AND (0`;
