@@ -1054,6 +1054,13 @@ async function updateFollow(connection, followIdx, followerIdx, status) {
   ]);
   return userRows;
 }
+//회원탈퇴
+async function updateUserStatus(connection, userIdx) {
+  const updateUserStatusQuery = `UPDATE User SET status=1 WHERE idx=?;
+                `;
+  const [userRows] = await connection.query(updateUserStatusQuery, [userIdx]);
+  return userRows;
+}
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -1086,4 +1093,5 @@ module.exports = {
   selectFollow,
   insertFollow,
   updateFollow,
+  updateUserStatus,
 };

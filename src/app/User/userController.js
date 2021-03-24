@@ -881,3 +881,19 @@ exports.postFollow = async function (req, res) {
   );
   return res.send(postFollowResponse);
 };
+/**
+ * API No. 회원탈퇴 API
+ * [PATCH] /app/users/:userIdx/status
+ */
+exports.patchUserStatus = async function (req, res) {
+  const userIdx = req.params.userIdx;
+  const userIdFromJWT = req.verifiedToken.userIdx;
+
+  if (!userIdx || !userIdFromJWT)
+    return res.send(response(baseResponse.USER_USERID_EMPTY));
+  if (userIdx != userIdFromJWT)
+    return res.send(response(baseResponse.USER_ID_NOT_MATCH));
+
+  const updateUserStatusResponse = await userService.updateUserStatus(userIdx);
+  return res.send(updateUserStatusResponse);
+};

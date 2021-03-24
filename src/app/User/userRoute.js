@@ -55,6 +55,9 @@ module.exports = function (app) {
 
   // 팔로우 API
   app.post("/app/users/:userIdx/follow", jwtMiddleware, user.postFollow);
+
+  // 회원탈퇴 API
+  app.patch("/app/users/:userIdx/status", jwtMiddleware, user.patchUserStatus);
 };
 
 // TODO: 자동로그인 API (JWT 검증 및 Payload 내뱉기)
