@@ -315,3 +315,66 @@ exports.createNaverUser = async function (email, nickname, phone, profile_img) {
     return errResponse(baseResponse.DB_ERROR);
   }
 };
+exports.updateUserNickname = async function (userIdx, nickname) {
+  try {
+    //userIdx 확인
+    const userRows = await userProvider.retrieveUser(userIdx);
+    if (userRows.length < 1) return errResponse(baseResponse.USER_ID_NOT_EXIST);
+
+    const connection = await pool.getConnection(async (conn) => conn);
+    const userResult = await userDao.updateUserNickname(
+      connection,
+      userIdx,
+      nickname
+    );
+    connection.release();
+
+    return response(baseResponse.SUCCESS, { userIdx: userIdx });
+  } catch (err) {
+    logger.error(`App - patchUser Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};
+
+exports.updateUserImage = async function (userIdx, profileImg) {
+  try {
+    //userIdx 확인
+    const userRows = await userProvider.retrieveUser(userIdx);
+    if (userRows.length < 1) return errResponse(baseResponse.USER_ID_NOT_EXIST);
+
+    const connection = await pool.getConnection(async (conn) => conn);
+    const userResult = await userDao.updateUserImage(
+      connection,
+      userIdx,
+      profileImg
+    );
+    connection.release();
+
+    return response(baseResponse.SUCCESS);
+  } catch (err) {
+    logger.error(`App - patchUser Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};
+exports.updateUserEmail = async function (userIdx, email) {
+  try {
+    //userIdx 확인
+    const userRows = await userProvider.retrieveUser(userIdx);
+    if (userRows.length < 1) return errResponse(baseResponse.USER_ID_NOT_EXIST);
+    if (userRows.loginType == 0)
+      return errResponse(baseResponse.USER_EMAIL_UPDATE_ERROR);
+
+    const connection = await pool.getConnection(async (conn) => conn);
+    const userResult = await userDao.updateUserEmail(
+      connection,
+      userIdx,
+      email
+    );
+    connection.release();
+
+    return response(baseResponse.SUCCESS);
+  } catch (err) {
+    logger.error(`App - patchUser Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};

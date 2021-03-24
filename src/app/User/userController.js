@@ -153,21 +153,50 @@ exports.login = async function (req, res) {
  * body : nickname
  */
 exports.patchUsers = async function (req, res) {
-  // jwt - userId, path variable :userId
+  // jwt - userIdx, path variable :userIdx
+  //Body - nickname, profileImg, email
 
-  const userIdFromJWT = req.verifiedToken.userId;
+  const userIdFromJWT = req.verifiedToken.userIdx;
 
-  const userId = req.params.userId;
-  const nickname = req.body.nickname;
+  const userIdx = req.params.userIdx;
+  const { nickname, profileImg, email } = req.body;
 
-  if (userIdFromJWT != userId) {
-    res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+  if (userIdFromJWT != userIdx) {
+    return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+  }
+
+  if (nickname) {
+    if (nickname.length < 2)
+      return res.send(response(baseResponse.SIGNUP_NICKNAME_LENGTH));
+
+    const patchUserResponse = await userService.updateUserNickname(
+      userIdx,
+      nickname
+    );
+    return res.send(patchUserResponse);
+  } else if (profileImg) {
+    let imgRegex = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+
+    if (!imgRegex.test(profileImg))
+      return res.send(response(baseResponse.IMAGE_URL_ERROR_TYPE));
+
+    const patchUserResponse = await userService.updateUserImage(
+      userIdx,
+      profileImg
+    );
+    return res.send(patchUserResponse);
+  } else if (email) {
+    // 길이 체크
+    if (email.length > 30)
+      return res.send(response(baseResponse.SIGNUP_EMAIL_LENGTH));
+    // 형식 체크 (by 정규표현식)
+    if (!regexEmail.test(email))
+      return res.send(response(baseResponse.SIGNUP_EMAIL_ERROR_TYPE));
+
+    const patchUserResponse = await userService.updateUserEmail(userIdx, email);
+    return res.send(patchUserResponse);
   } else {
-    if (!nickname)
-      return res.send(errResponse(baseResponse.USER_NICKNAME_EMPTY));
-
-    const editUserInfo = await userService.editUser(userId, nickname);
-    return res.send(editUserInfo);
+    res.send(errResponse(baseResponse.USER_UPDATE_PARAMETER_EMPTY));
   }
 };
 

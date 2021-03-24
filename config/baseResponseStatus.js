@@ -304,6 +304,17 @@ module.exports = {
     code: 2056,
     message: "전화번호 형식을 확인해주세요",
   },
+  USER_UPDATE_PARAMETER_EMPTY: {
+    isSuccess: false,
+    code: 2057,
+    message: "수정할 값을 입력해주세요",
+  },
+  USER_EMAIL_UPDATE_ERROR: {
+    isSuccess: false,
+    code: 2058,
+    message: "소셜로그인 회원만 이메일 수정이 가능합니다",
+  },
+
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,

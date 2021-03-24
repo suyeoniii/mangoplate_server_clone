@@ -43,13 +43,13 @@ async function selectVerifiedEmail(connection, email) {
 }
 
 // userId 회원 조회
-async function selectUserId(connection, userId) {
+async function selectUserId(connection, userIdx) {
   const selectUserIdQuery = `
-                 SELECT idx, userEmail, nickname, status
-                 FROM User U
+                 SELECT idx, userEmail, nickname, status, loginType
+                 FROM User
                  WHERE idx = ? and status=0;
                  `;
-  const [userRow] = await connection.query(selectUserIdQuery, userId);
+  const [userRow] = await connection.query(selectUserIdQuery, [userIdx]);
   return userRow;
 }
 
@@ -993,6 +993,36 @@ async function selectUserReview(
   }
   return [reviewRows];
 }
+//회원정보수정 - 닉네임
+async function updateUserNickname(connection, userIdx, nickname) {
+  const updateUserNicknameQuery = `UPDATE User SET nickname=? where idx=?;
+                `;
+  const [userRows] = await connection.query(updateUserNicknameQuery, [
+    nickname,
+    userIdx,
+  ]);
+  return userRows;
+}
+//회원정보수정 - 프로필이미지
+async function updateUserImage(connection, userIdx, profileImg) {
+  const updateUserImageQuery = `UPDATE User SET profileImg=? where idx=?;
+                `;
+  const [userRows] = await connection.query(updateUserImageQuery, [
+    profileImg,
+    userIdx,
+  ]);
+  return userRows;
+}
+//회원정보수정 - 이메일
+async function updateUserEmail(connection, userIdx, email) {
+  const updateUserEmailQuery = `UPDATE User SET userEmail=? where idx=?;
+                `;
+  const [userRows] = await connection.query(updateUserEmailQuery, [
+    email,
+    userIdx,
+  ]);
+  return userRows;
+}
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -1019,4 +1049,7 @@ module.exports = {
   selectMyVisited,
   selectMyReview,
   selectUserReview,
+  updateUserNickname,
+  updateUserImage,
+  updateUserEmail,
 };
