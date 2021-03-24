@@ -314,6 +314,11 @@ module.exports = {
     code: 2058,
     message: "소셜로그인 회원만 이메일 수정이 가능합니다",
   },
+  USER_FOLLOW_ERROR_TYPE: {
+    isSuccess: false,
+    code: 2059,
+    message: "본인을 팔로우할 수 없습니다",
+  },
 
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {

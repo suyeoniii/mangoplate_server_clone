@@ -862,3 +862,22 @@ exports.phoneCheck = async function (req, res) {
 
   return res.send(response(baseResponse.SUCCESS));
 };
+/**
+ * API No. 팔로우 API
+ * [POST] /app/users/:userIdx/follow
+ */
+exports.postFollow = async function (req, res) {
+  const userIdx = req.params.userIdx;
+  const userIdFromJWT = req.verifiedToken.userIdx;
+
+  if (!userIdx || !userIdFromJWT)
+    return res.send(response(baseResponse.USER_USERID_EMPTY));
+  if (userIdx == userIdFromJWT)
+    return res.send(response(baseResponse.USER_FOLLOW_ERROR_TYPE));
+
+  const postFollowResponse = await userService.createFollow(
+    userIdx,
+    userIdFromJWT
+  );
+  return res.send(postFollowResponse);
+};

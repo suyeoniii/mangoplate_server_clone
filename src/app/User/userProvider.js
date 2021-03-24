@@ -301,3 +301,14 @@ exports.retrieveLogin = async function (userIdx) {
 
   return loginResult;
 };
+exports.retrieveFollow = async function (followIdx, followerIdx) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const followResult = await userDao.selectFollow(
+    connection,
+    followIdx,
+    followerIdx
+  );
+  connection.release();
+
+  return followResult[0];
+};

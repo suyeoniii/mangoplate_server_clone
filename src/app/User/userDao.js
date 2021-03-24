@@ -1023,6 +1023,37 @@ async function updateUserEmail(connection, userIdx, email) {
   ]);
   return userRows;
 }
+//팔로우 체크
+async function selectFollow(connection, followIdx, followerIdx) {
+  const selectFollowQuery = `SELECT idx, status FROM Follow WHERE followIdx=? AND followerIdx=?;
+                `;
+  const [userRows] = await connection.query(selectFollowQuery, [
+    followIdx,
+    followerIdx,
+  ]);
+  return userRows;
+}
+//insert 팔로우
+async function insertFollow(connection, followIdx, followerIdx) {
+  const insertFollowQuery = `INSERT INTO Follow(followIdx,followerIdx) VALUES(?,?);
+                `;
+  const [userRows] = await connection.query(insertFollowQuery, [
+    followIdx,
+    followerIdx,
+  ]);
+  return userRows;
+}
+//update 팔로우
+async function updateFollow(connection, followIdx, followerIdx, status) {
+  const updateFollowQuery = `UPDATE Follow SET status=? where followIdx=? and followerIdx=?;
+                `;
+  const [userRows] = await connection.query(updateFollowQuery, [
+    status,
+    followIdx,
+    followerIdx,
+  ]);
+  return userRows;
+}
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -1052,4 +1083,7 @@ module.exports = {
   updateUserNickname,
   updateUserImage,
   updateUserEmail,
+  selectFollow,
+  insertFollow,
+  updateFollow,
 };

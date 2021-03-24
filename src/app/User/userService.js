@@ -378,3 +378,46 @@ exports.updateUserEmail = async function (userIdx, email) {
     return errResponse(baseResponse.DB_ERROR);
   }
 };
+//팔로우
+exports.createFollow = async function (followIdx, followerIdx) {
+  try {
+    //userIdx 확인
+    const followRows = await userProvider.retrieveUser(followIdx);
+
+    if (!followRows || followRows.length < 1)
+      return errResponse(baseResponse.USER_ID_NOT_EXIST);
+    const followerRows = await userProvider.retrieveUser(followerIdx);
+    if (!followRows || followerRows.length < 1)
+      return errResponse(baseResponse.USER_ID_NOT_EXIST);
+
+    //팔로우 테이블 조회
+    const isFollowRows = await userProvider.retrieveFollow(
+      followIdx,
+      followerIdx
+    );
+    if (!isFollowRows || isFollowRows.length < 1) {
+      const connection = await pool.getConnection(async (conn) => conn);
+      const userResult = await userDao.insertFollow(
+        connection,
+        followIdx,
+        followerIdx
+      );
+      connection.release();
+      return response(baseResponse.SUCCESS, { status: true });
+    } else {
+      const status = !isFollowRows.status;
+      const connection = await pool.getConnection(async (conn) => conn);
+      const userResult = await userDao.updateFollow(
+        connection,
+        followIdx,
+        followerIdx,
+        status
+      );
+      connection.release();
+      return response(baseResponse.SUCCESS, { status: !status });
+    }
+  } catch (err) {
+    logger.error(`App - patchUser Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};
