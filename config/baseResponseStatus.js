@@ -416,6 +416,16 @@ module.exports = {
     code: 3019,
     message: "등록된 가고싶다가 아닙니다",
   },
+  ORDERNO_NOT_EXIST: {
+    isSuccess: false,
+    code: 3020,
+    message: "존재하지 않는 주문번호입니다",
+  },
+  EatDeal_ID_NOT_EXIST: {
+    isSuccess: false,
+    code: 3021,
+    message: "존재하지 않는 eatDealIdx입니다",
+  },
   //Connection, Transaction 등의 서버 오류
   DB_ERROR: { isSuccess: false, code: 4000, message: "데이터 베이스 에러" },
   SERVER_ERROR: { isSuccess: false, code: 4001, message: "서버 에러" },

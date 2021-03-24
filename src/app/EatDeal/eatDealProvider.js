@@ -24,3 +24,24 @@ exports.retrieveEatDealById = async function (eatDealIdx) {
   connection.release();
   return eatDealResult;
 };
+exports.eatDealCheck = async function (eatDealIdx) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const eatDealResult = await eatDealDao.selectEatDealCheck(
+    connection,
+    eatDealIdx
+  );
+  connection.release();
+  return eatDealResult;
+};
+exports.orderCheck = async function (orderNo) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const eatDealResult = await eatDealDao.selectOrderCheck(connection, orderNo);
+  connection.release();
+  return eatDealResult;
+};
+exports.orderNoCheck = async function (orderNo) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const eatDealResult = await eatDealDao.selectOrderNo(connection, orderNo);
+  connection.release();
+  return eatDealResult;
+};

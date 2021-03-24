@@ -815,7 +815,7 @@ exports.postPhoneCheck = async function (req, res) {
         contentType: "COMM",
         countryCode: "82",
         from: secret_config.SENSAPI_phone,
-        content: `망고플레이트 인증번호 ${number}입니다.`,
+        content: `망고플레이트 인증코드는 [${number}] 입니다.`,
         messages: [
           {
             to: `${phone}`,
