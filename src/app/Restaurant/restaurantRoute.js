@@ -36,6 +36,9 @@ module.exports = function (app) {
   //검색
   app.get("/app/search", restaurant.getSearch);
 
+  //식당 등록
+  app.post("/app/restaurants", jwtMiddleware, restaurant.postRestaurant);
+
   //맛집 이미지 상세조회
   //app.get("/app/restaurants/:restaurantIdx/", restaurant.getRestaurantsById);
 };

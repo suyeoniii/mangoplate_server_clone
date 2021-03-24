@@ -289,6 +289,21 @@ module.exports = {
     code: 2053,
     message: "검색 키워드를 입력해주세요",
   },
+  RESTAURANT_NAME_EMPTY: {
+    isSuccess: false,
+    code: 2054,
+    message: "식당 이름을 입력해주세요",
+  },
+  RESTAURANT_LOCATION_EMPTY: {
+    isSuccess: false,
+    code: 2055,
+    message: "식당 위치를 입력해주세요",
+  },
+  PHONE_ERROR_TYPE: {
+    isSuccess: false,
+    code: 2056,
+    message: "전화번호 형식을 확인해주세요",
+  },
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {
     isSuccess: false,

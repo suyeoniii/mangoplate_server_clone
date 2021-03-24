@@ -525,7 +525,32 @@ async function selectRestaurantSearch(
   const [restaurantRows] = await connection.query(selectRestaurantListQuery);
   return restaurantRows;
 }
+async function insertRestaurant(
+  connection,
+  restaurantName,
+  lat,
+  long,
+  phone,
+  food,
+  area,
+  doro,
+  jibeon
+) {
+  const insertRestaurantQuery = `INSERT INTO Restaurant(restaurantName, lati, longi, phone, type, area, doro, jibeon)
+  VALUES(?,?,?,?,?,?,?,?)`;
 
+  const restaurantRows = await connection.query(insertRestaurantQuery, [
+    restaurantName,
+    lat,
+    long,
+    phone,
+    food,
+    area,
+    doro,
+    jibeon,
+  ]);
+  return restaurantRows[0];
+}
 module.exports = {
   selectRestaurantList,
   selectRestaurant,
@@ -542,4 +567,5 @@ module.exports = {
   updateVisitedStatus,
   deleteStarStatus,
   selectRestaurantSearch,
+  insertRestaurant,
 };

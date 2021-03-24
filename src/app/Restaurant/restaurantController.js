@@ -386,3 +386,94 @@ exports.getSearch = async function (req, res) {
   );
   return res.send(response(baseResponse.SUCCESS, restaurantListResult));
 };
+/**
+ * API No.
+ * API Name : 식당 등록
+ * [POST] /app/restaurants
+ */
+exports.postRestaurant = async function (req, res) {
+  /**
+   * Body : restaurantName, lat, long, phone, food
+   */
+  const userIdFromJWT = req.verifiedToken.userIdx;
+  const { restaurantName, lat, long } = req.body;
+  var phone = req.body.phone;
+  var food = req.body.food;
+
+  if (!restaurantName)
+    return res.send(response(baseResponse.RESTAURANT_NAME_EMPTY));
+  if (!lat || !long)
+    return res.send(response(baseResponse.RESTAURANT_LOCATION_EMPTY));
+
+  var area, doro, jibeon;
+
+  //카카오 API 호출 - 도로, 지번주소 검색
+  const api_url2 = `https://dapi.kakao.com/v2/local/geo/coord2address.json?input_coord=WGS84&y=${lat}&x=${long}`;
+  const header = `KakaoAK ${secret_config.KAKAO_SECRET}`;
+  const options2 = {
+    url: api_url2,
+    headers: { Authorization: header },
+  };
+  //kakao = async function (req, res){
+  request.get(options2, async function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      const obj = JSON.parse(body);
+
+      const parent_area = obj.documents[0].address.region_1depth_name;
+      const local = obj.documents[0].address.region_2depth_name;
+      //특별시 제거
+      if (parent_area !== "서울") {
+        //구 제거
+        area = "";
+        let i = 0;
+        for (
+          ;
+          local[i] !== "시" && local[i] !== "군" && i < local.length - 2;
+          i++
+        ) {
+          area += local[i];
+        }
+        area += local[i];
+      } else {
+        area = local;
+      }
+
+      doro = obj.documents[0].road_address.address_name;
+      jibeon = obj.documents[0].address.address_name;
+    }
+  });
+
+  if (phone) {
+    //번호 정규표현식 체크
+    var regMobile = /^01([0|1|6|7|8|9]?)-?([0-9]{3,4})-?([0-9]{4})$/;
+    var regPhone = /^\d{2,3}-?\d{3,4}-?\d{4}$/;
+
+    if (!regPhone.test(phone) && !regMobile.test(phone))
+      return res.send(response(baseResponse.PHONE_ERROR_TYPE));
+  } else {
+    phone = null;
+  }
+  if (!food) food = 0;
+  if (food > 8 || food < 0)
+    return res.send(response(baseResponse.RESTAURANT_FOOD_ERROR_TYPE));
+
+  //카카오 API 사용해야하는 경우 지연시간때문에 1초기다림
+  if (lat && long) {
+    setTimeout(binding, 1000);
+  } else {
+    binding();
+  }
+  async function binding() {
+    const postRestaurantResponse = await restaurantService.createRestaurant(
+      restaurantName,
+      lat,
+      long,
+      phone,
+      food,
+      area,
+      doro,
+      jibeon
+    );
+    return res.send(postRestaurantResponse);
+  }
+};

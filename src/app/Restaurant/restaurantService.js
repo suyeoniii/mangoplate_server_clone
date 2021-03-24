@@ -261,3 +261,37 @@ exports.updateVisitedStatus = async function (userIdx, visitedIdx) {
     return errResponse(baseResponse.DB_ERROR);
   }
 };
+//식당 등록
+exports.createRestaurant = async function (
+  restaurantName,
+  lat,
+  long,
+  phone,
+  food,
+  area,
+  doro,
+  jibeon
+) {
+  try {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const restaurantResult = await restaurantDao.insertRestaurant(
+      connection,
+      restaurantName,
+      lat,
+      long,
+      phone,
+      food,
+      area,
+      doro,
+      jibeon
+    );
+    connection.release();
+
+    return response(baseResponse.SUCCESS, {
+      restaurantIdx: restaurantResult.insertId,
+    });
+  } catch (err) {
+    logger.error(`App - createRestaurant Service error\n: ${err.message}`);
+    return errResponse(baseResponse.DB_ERROR);
+  }
+};
