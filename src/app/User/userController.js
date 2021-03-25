@@ -856,9 +856,8 @@ exports.phoneCheck = async function (req, res) {
 
   if (CacheData != verifyCode) {
     res.send(response(baseResponse.SMS_NOT_MATCH));
+    cache.del(phone);
   }
-
-  cache.del(phone);
 
   return res.send(response(baseResponse.SUCCESS));
 };
