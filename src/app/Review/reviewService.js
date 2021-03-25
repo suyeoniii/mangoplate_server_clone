@@ -113,7 +113,6 @@ exports.updateReviewStatus = async function (userIdx, reviewIdx) {
     const connection = await pool.getConnection(async (conn) => conn);
     const reviewResult = await reviewDao.updateReviewStatus(
       connection,
-      userIdx,
       reviewIdx
     );
     connection.release();

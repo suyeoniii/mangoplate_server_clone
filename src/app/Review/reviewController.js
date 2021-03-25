@@ -271,7 +271,7 @@ exports.getReviews = async function (req, res) {
     }
   }
 
-  if (!category && category != 1)
+  if (category && category != 1)
     return res.send(errResponse(baseResponse.REVIEW_CATEGORY_ERROR_TYPE));
   if (!score) return res.send(errResponse(baseResponse.REVIEW_SCORE_EMPTY));
   for (var element in score) {
