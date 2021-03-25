@@ -106,7 +106,7 @@ exports.updateStarStatus = async function (userIdx, restaurantIdx) {
       );
       connection.release();
       return response(baseResponse.SUCCESS, {
-        status: true,
+        isSet: 1,
       });
     } else {
       //update
@@ -121,7 +121,7 @@ exports.updateStarStatus = async function (userIdx, restaurantIdx) {
         !status
       );
       connection.release();
-      return response(baseResponse.SUCCESS, { status: status });
+      return response(baseResponse.SUCCESS, { isSet: status });
     }
   } catch (err) {
     logger.error(`App - createStar Service error\n: ${err.message}`);
