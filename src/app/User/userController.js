@@ -851,11 +851,12 @@ exports.phoneCheck = async function (req, res) {
   const CacheData = cache.get(phone);
 
   if (!CacheData) {
-    res.send(response(baseResponse.SMS_NOT_MATCH));
+    return res.send(response(baseResponse.SMS_NOT_MATCH));
   }
 
   if (CacheData != verifyCode) {
-    res.send(response(baseResponse.SMS_NOT_MATCH));
+    return res.send(response(baseResponse.SMS_NOT_MATCH));
+  } else {
     cache.del(phone);
   }
 
