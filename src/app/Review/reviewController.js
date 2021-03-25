@@ -79,11 +79,6 @@ exports.postReview = async function (req, res) {
     }
   }
 
-  //올바른 url이 맞다면 해당 url로 이동
-  if (imgRegex.test(url)) {
-    location.href = url;
-  }
-
   const postReviewResponse = await reviewService.createReview(
     userIdFromJWT,
     restaurantIdx,
