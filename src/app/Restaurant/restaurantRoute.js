@@ -41,4 +41,7 @@ module.exports = function (app) {
 
   //맛집 이미지 전체조회
   app.get("/app/restaurants/:restaurantIdx/image", restaurant.getImages);
+
+  //맛집 리뷰 전체조회
+  app.get("/app/restaurants/:restaurantIdx/review", restaurant.getReviews);
 };

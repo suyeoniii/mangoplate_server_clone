@@ -574,6 +574,77 @@ async function selectImages(connection, restaurantIdx, page, limit) {
 
   return restaurantRows[0];
 }
+async function selectReviews(
+  connection,
+  userIdx,
+  restaurantIdx,
+  sort,
+  score,
+  page,
+  limit
+) {
+  var selectRestaurantQuery = `select Res.idx restaurantIdx, restaurantName, Rev.idx reviewIdx,
+  U.idx userIdx, U.nickname,U.profileImg,
+  Ifnull(FORMAT(reviews,0),0) reviews, Ifnull(FORMAT(follower,0),0) follower,
+  Rev.score,Rev.contents,
+  Ifnull(FORMAT(heart,0),0) heart,Ifnull(FORMAT(comment,0),0) comment,
+  case
+ when TIMESTAMPDIFF(Minute, Rev.createdAt, current_timestamp()) < 60
+  then CONCAT(TIMESTAMPDIFF(Minute, Rev.createdAt, current_timestamp()),'분 전')
+  when TIMESTAMPDIFF(Hour, Rev.createdAt, current_timestamp()) < 24
+  then CONCAT(TIMESTAMPDIFF(Hour, Rev.createdAt, current_timestamp()),'시간 전')
+ when TIMESTAMPDIFF(Day, Rev.createdAt, current_timestamp()) < 8
+  then CONCAT(TIMESTAMPDIFF(Day, Rev.createdAt, current_timestamp()),'일 전')
+ else DATE_FORMAT(Rev.createdAt, '%Y-%m-%d')
+  end  as createdAt`;
+
+  if (userIdx) {
+    selectRestaurantQuery += `,ifnull(isHeart, 0) isHeart`;
+  }
+  selectRestaurantQuery += ` from Review Rev
+inner join Restaurant Res on Res.idx=Rev.restaurantIdx
+inner join User U on U.idx=Rev.userIdx
+left outer join (select count(*) reviews, Rev.idx idx from Review Rev group by Rev.restaurantIdx) as Reviews on Reviews.idx=Res.idx
+left outer join (select count(*) as follower,U.idx idx from Follow F
+inner join User U on F.followIdx=U.idx group by U.idx) F on F.idx=U.idx
+left outer join (select count(*) heart`;
+
+  if (userIdx) {
+    selectRestaurantQuery += `,count(case when userIdx=${userIdx} then 1 end) isHeart`;
+  }
+
+  selectRestaurantQuery += `, reviewIdx from Heart where status =0 group by reviewIdx) Heart on Heart.reviewIdx=Rev.idx
+left outer join (select count(*) comment, reviewIdx from Comment where status = 0 group by reviewIdx) C on C.reviewIdx=Rev.idx
+where Rev.restaurantIdx=?`;
+
+  if (score) {
+    selectRestaurantQuery += ` AND (score=${score})`;
+  }
+
+  if (sort == 1) {
+    //최신순
+    selectRestaurantQuery += ` ORDER BY Rev.updatedAt DESC`;
+  } else {
+    //좋아요순
+    selectRestaurantQuery += ` ORDER BY Heart DESC`;
+  }
+  selectRestaurantQuery += ` LIMIT ${limit * (page - 1)},${limit}`;
+  const selectImagesQuery = `select RI.idx reviewImgIdx,imgUrl from ReviewImg RI where RI.reviewIdx=?;`;
+
+  const [reviewRows] = await connection.query(selectRestaurantQuery, [
+    restaurantIdx,
+  ]);
+  //리뷰 이미지
+  for (i in reviewRows) {
+    const [reviewImgRows] = await connection.query(
+      selectImagesQuery,
+      reviewRows[i].reviewIdx
+    );
+    reviewRows[i].reviewImg = reviewImgRows;
+  }
+
+  return reviewRows;
+}
 module.exports = {
   selectRestaurantList,
   selectRestaurant,
@@ -592,4 +663,5 @@ module.exports = {
   selectRestaurantSearch,
   insertRestaurant,
   selectImages,
+  selectReviews,
 };

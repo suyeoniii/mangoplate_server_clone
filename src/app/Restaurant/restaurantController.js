@@ -503,3 +503,51 @@ exports.getImages = async function (req, res) {
   );
   return res.send(response(baseResponse.SUCCESS, getRestaurantResponse));
 };
+/**
+ * API No.
+ * API Name : 맛집 리뷰 전체조회
+ * [GET] /app/restaurants/:restaurantIdx/review
+ */
+exports.getReviews = async function (req, res) {
+  /**
+   * Path variable : restaurantIdx
+   * Query STring : sort, score, page, limit
+   */
+
+  const token = req.headers["x-access-token"] || req.query.token;
+  var userIdFromJWT;
+
+  //토큰 받은 경우
+  if (token) {
+    jwt.verify(token, secret_config.jwtsecret, (err, verifiedToken) => {
+      if (verifiedToken) {
+        userIdFromJWT = verifiedToken.userIdx;
+      }
+    });
+    if (!userIdFromJWT) {
+      return res.send(errResponse(baseResponse.TOKEN_VERIFICATION_FAILURE));
+    }
+  }
+  const restaurantIdx = req.params.restaurantIdx;
+  var { sort, score, page, limit } = req.query;
+
+  if (!restaurantIdx)
+    return res.send(response(baseResponse.RESTAURANT_ID_EMPTY));
+  if (!page) page = 1;
+  if (!limit) limit = 10;
+
+  if (!sort && sort != 1)
+    return res.send(response(baseResponse.RESTAURANT_SORT_ERROR_TYPE));
+  if (!score && score > 3)
+    return res.send(response(baseResponse.RESTAURANT_SCORE_ERROR_TYPE));
+
+  const getRestaurantResponse = await restaurantProvider.retrieveReviews(
+    userIdFromJWT,
+    restaurantIdx,
+    sort,
+    score,
+    page,
+    limit
+  );
+  return res.send(response(baseResponse.SUCCESS, getRestaurantResponse));
+};

@@ -300,7 +300,7 @@ async function selectReviews(
 //리뷰이미지 상세조회
 async function selectImageById(connection, imgIdx, userIdx) {
   console.log(imgIdx);
-  var selectReviewQuery = `select Res.idx restaurantIdx, RI.idx imgIdx, restaurantName,U.profileImg, U.nickname,
+  var selectReviewQuery = `select Res.idx restaurantIdx, RI.idx imgIdx, restaurantName,U.idx userIdx,U.profileImg, U.nickname,
   Ifnull(FORMAT(reviews,0),0) reviews, Ifnull(FORMAT(follower,0),0) follower,
   RI.imgUrl, Rev.contents, case
  when TIMESTAMPDIFF(Minute, Rev.createdAt, current_timestamp()) < 60

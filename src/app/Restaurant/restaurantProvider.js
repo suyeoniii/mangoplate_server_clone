@@ -158,3 +158,24 @@ exports.retrieveImages = async function (restaurantIdx, page, limit) {
   connection.release();
   return restaurantListResult;
 };
+exports.retrieveReviews = async function (
+  restaurantIdx,
+  userIdx,
+  sort,
+  score,
+  page,
+  limit
+) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const reviewListResult = await restaurantDao.selectReviews(
+    connection,
+    userIdx,
+    restaurantIdx,
+    sort,
+    score,
+    page,
+    limit
+  );
+  connection.release();
+  return reviewListResult;
+};
