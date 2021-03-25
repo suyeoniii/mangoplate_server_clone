@@ -584,7 +584,7 @@ exports.getRecommend = async function (req, res) {
     restaurantIdx
   );
   if (!getLocationResponse)
-    return res.send(response(baseResponse.RESTAURANT_NOT_EXIST));
+    return res.send(response(baseResponse.RESTAURANT_ID_NOT_EXIST));
 
   const lat = getLocationResponse.lati;
   const long = getLocationResponse.longi;
