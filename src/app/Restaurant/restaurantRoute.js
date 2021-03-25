@@ -39,6 +39,6 @@ module.exports = function (app) {
   //식당 등록
   app.post("/app/restaurants", jwtMiddleware, restaurant.postRestaurant);
 
-  //맛집 이미지 상세조회
-  //app.get("/app/restaurants/:restaurantIdx/", restaurant.getRestaurantsById);
+  //맛집 이미지 전체조회
+  app.get("/app/restaurants/:restaurantIdx/image", restaurant.getImages);
 };

@@ -477,3 +477,29 @@ exports.postRestaurant = async function (req, res) {
     return res.send(postRestaurantResponse);
   }
 };
+/**
+ * API No.
+ * API Name : 맛집 이미지 전체조회
+ * [GET] /app/restaurants/:restaurantIdx/image
+ */
+exports.getImages = async function (req, res) {
+  /**
+   * Path variable : restaurantIdx
+   * Query STring : page, limit
+   */
+
+  const restaurantIdx = req.params.restaurantIdx;
+  var { page, limit } = req.query;
+
+  if (!restaurantIdx)
+    return res.send(response(baseResponse.RESTAURANT_ID_EMPTY));
+  if (!page) page = 1;
+  if (!limit) limit = 30;
+
+  const getRestaurantResponse = await restaurantProvider.retrieveImages(
+    restaurantIdx,
+    page,
+    limit
+  );
+  return res.send(response(baseResponse.SUCCESS, getRestaurantResponse));
+};

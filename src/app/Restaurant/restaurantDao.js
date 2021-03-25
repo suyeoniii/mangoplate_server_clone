@@ -551,6 +551,29 @@ async function insertRestaurant(
   ]);
   return restaurantRows[0];
 }
+async function selectImages(connection, restaurantIdx, page, limit) {
+  const selectRestaurantQuery = `select distinct Res.idx restaurantIdx, Res.restaurantName from ReviewImg RI
+  inner join Review Rev on Rev.idx=RI.reviewIdx
+  inner join Restaurant Res on Res.idx=Rev.restaurantIdx
+  where Rev.restaurantIdx=?`;
+
+  const selectImagesQuery = `select RI.idx imgIdx, RI.imgUrl from ReviewImg RI
+  inner join Review Rev on Rev.idx=RI.reviewIdx
+  where Rev.restaurantIdx=? order by RI.updatedAt DESC LIMIT ${
+    limit * (page - 1)
+  },${limit}`;
+
+  const [restaurantRows] = await connection.query(selectRestaurantQuery, [
+    restaurantIdx,
+  ]);
+  const [imageRows] = await connection.query(selectImagesQuery, [
+    restaurantIdx,
+  ]);
+  console.log(imageRows);
+  restaurantRows[0].img = imageRows;
+
+  return restaurantRows[0];
+}
 module.exports = {
   selectRestaurantList,
   selectRestaurant,
@@ -568,4 +591,5 @@ module.exports = {
   deleteStarStatus,
   selectRestaurantSearch,
   insertRestaurant,
+  selectImages,
 };

@@ -147,3 +147,14 @@ exports.retrieveRestaurantSearch = async function (
   connection.release();
   return restaurantListResult;
 };
+exports.retrieveImages = async function (restaurantIdx, page, limit) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const restaurantListResult = await restaurantDao.selectImages(
+    connection,
+    restaurantIdx,
+    page,
+    limit
+  );
+  connection.release();
+  return restaurantListResult;
+};
