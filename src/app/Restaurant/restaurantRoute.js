@@ -44,4 +44,7 @@ module.exports = function (app) {
 
   //맛집 리뷰 전체조회
   app.get("/app/restaurants/:restaurantIdx/review", restaurant.getReviews);
+
+  //주변 인기 식당
+  app.get("/app/restaurants/:restaurantIdx/recommend", restaurant.getRecommend);
 };

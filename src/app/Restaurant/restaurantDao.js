@@ -191,21 +191,21 @@ left outer join (select MAX(updatedAt) menuUpdatedAt,restaurantIdx from
   }
   selectRestaurantQuery += ` where Res.idx=${restaurantIdx};`;
 
-  var selectReviewListQuery = `select Rev.idx reviewIdx, Rev.userIdx, U.nickname,U.profileImg, Rev.score, Rev.contents, FORMAT(reviews, 0) reviews, FORMAT(follower, 0) follower
-  , FORMAT(heart, 0) heart,  FORMAT(comment, 0) comment, DATE_FORMAT(Rev.updatedAt, '%Y-%m-%d') updatedAt`;
+  var selectReviewListQuery = `select Rev.idx reviewIdx, Rev.userIdx, U.nickname,U.profileImg, Rev.score, Rev.contents, FORMAT(ifnull(reviews, 0),0) reviews, FORMAT(ifnull(follower, 0),0) follower
+  , FORMAT(ifnull(heart, 0),0) heart,  FORMAT(ifnull(comment, 0),0) comment, DATE_FORMAT(Rev.updatedAt, '%Y-%m-%d') updatedAt`;
 
   if (userIdx) {
-    selectReviewListQuery += `,isHeart`;
+    selectReviewListQuery += `,ifnull(isHeart,0) isHeart`;
   }
 
   selectReviewListQuery += ` from Review Rev
   inner join Restaurant Res on Rev.restaurantIdx=Res.idx
   inner join User U on U.idx=Rev.userIdx
   inner join (select count(*) reviews, Rev.idx idx from Review Rev group by Rev.restaurantIdx) as Reviews on Reviews.idx=Res.idx
-  inner join (select count(*) as follower,U.idx idx from Follow F
+  left outer join (select count(*) as follower,U.idx idx from Follow F
   inner join User U on F.followIdx=U.idx group by U.idx) F on F.idx=U.idx
-  inner join (select count(*) comment, reviewIdx from Comment group by reviewIdx) Com on Com.reviewIdx=Rev.idx
-  inner join (select count(*) heart, `;
+  left outer join (select count(*) comment, reviewIdx from Comment group by reviewIdx) Com on Com.reviewIdx=Rev.idx
+  left outer join (select count(*) heart, `;
   if (userIdx) {
     selectReviewListQuery += ` count(case when Heart.status=0 AND userIdx=${userIdx} then 1 end) isHeart,`;
   }
@@ -645,6 +645,55 @@ where Rev.restaurantIdx=?`;
 
   return reviewRows;
 }
+async function selectRecommend(connection, userIdx, restaurantIdx, lat, long) {
+  var selectRecommendQuery = `select distinct Res.idx restaurantIdx, restaurantName, imgUrl, area, FORMAT(ifnull(views,0),0) views, FORMAT(ifnull(reviews,0),0) reviews,score`;
+
+  if (userIdx) selectRecommendQuery += `,ifnull(isStar,0) isStar`;
+
+  selectRecommendQuery += ` from Restaurant Res
+  left outer join (select R.idx idx, R.restaurantIdx restaurantIdx from Review R group by R.restaurantIdx) Rev on Rev.restaurantIdx=Res.idx
+  left outer join (select imgUrl,RI.reviewIdx idx from ReviewImg RI group by RI.reviewIdx) RIs on RIs.idx=Res.idx
+  inner join (select Round(sum(new_score)/count(*), 1) as score,count(*) as reviews, Rev.idx, Rev.restaurantIdx resIdx
+   from Review Rev
+      inner join (select
+      case
+      when Rev.score = 0 then 5
+      when Rev.score = 1 then 3
+      when Rev.score = 2 then 1
+  end as new_score, Rev.idx idx
+  from Review Rev) as Score on Score.idx=Rev.idx
+  group by Rev.restaurantIdx) as new_Rev on new_Rev.resIdx = Res.idx`;
+
+  if (userIdx) {
+    selectRecommendQuery += ` left outer join (select restaurantIdx,count(case when userIdx=${userIdx} then 1 end) isStar from Star S where status=0 group by restaurantIdx) ST on ST.restaurantIdx=Res.idx
+    `;
+  }
+  selectRecommendQuery += `inner join (SELECT idx,
+    Round((6371*acos(cos(radians('${lat}'))*cos(radians(lati))*cos(radians(longi)
+    -radians('${long}'))+sin(radians('${lat}'))*sin(radians(lati)))),2)
+    AS distance
+  FROM Restaurant
+Having distance <= 10) dis on dis.idx=Res.idx
+left outer join (select count(*) stars,restaurantIdx from Star where status=0 group by Star.restaurantIdx) S on S.restaurantIdx=Res.idx
+left outer join (select count(*) visited,restaurantIdx from Visited where status=0 group by Visited.restaurantIdx) VI on VI.restaurantIdx=Res.idx
+where Res.idx != ?
+ORDER BY ifnull(stars,0)+ifnull(visited,0)*2 DESC;`;
+
+  const [reviewRows] = await connection.query(selectRecommendQuery, [
+    restaurantIdx,
+  ]);
+
+  return reviewRows;
+}
+async function selectLocation(connection, restaurantIdx) {
+  const selectLocationQuery = `select idx,lati,longi from Restaurant where status=0`;
+
+  const [restaurantRows] = await connection.query(selectLocationQuery, [
+    restaurantIdx,
+  ]);
+
+  return restaurantRows[0];
+}
 module.exports = {
   selectRestaurantList,
   selectRestaurant,
@@ -664,4 +713,6 @@ module.exports = {
   insertRestaurant,
   selectImages,
   selectReviews,
+  selectRecommend,
+  selectLocation,
 };

@@ -551,3 +551,49 @@ exports.getReviews = async function (req, res) {
   );
   return res.send(response(baseResponse.SUCCESS, getRestaurantResponse));
 };
+/**
+ * API No.
+ * API Name : 주변인기식당 API
+ * [GET] /app/restaurants/:restaurantIdx/review
+ */
+exports.getRecommend = async function (req, res) {
+  /**
+   * Path variable : restaurantIdx
+   */
+
+  const token = req.headers["x-access-token"] || req.query.token;
+  var userIdFromJWT;
+
+  //토큰 받은 경우
+  if (token) {
+    jwt.verify(token, secret_config.jwtsecret, (err, verifiedToken) => {
+      if (verifiedToken) {
+        userIdFromJWT = verifiedToken.userIdx;
+      }
+    });
+    if (!userIdFromJWT) {
+      return res.send(errResponse(baseResponse.TOKEN_VERIFICATION_FAILURE));
+    }
+  }
+  const restaurantIdx = req.params.restaurantIdx;
+
+  if (!restaurantIdx)
+    return res.send(response(baseResponse.RESTAURANT_ID_EMPTY));
+
+  const getLocationResponse = await restaurantProvider.retrieveLocation(
+    restaurantIdx
+  );
+  if (!getLocationResponse)
+    return res.send(response(baseResponse.RESTAURANT_NOT_EXIST));
+
+  const lat = getLocationResponse.lati;
+  const long = getLocationResponse.longi;
+
+  const getRestaurantResponse = await restaurantProvider.retrieveRecommend(
+    userIdFromJWT,
+    restaurantIdx,
+    lat,
+    long
+  );
+  return res.send(response(baseResponse.SUCCESS, getRestaurantResponse));
+};
