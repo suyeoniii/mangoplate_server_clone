@@ -252,8 +252,7 @@ async function selectReviews(
     selectReviewQuery += ` AND area='${area}'`;
   }
   //팔로잉 조회
-  console.log(typeof category);
-  if (category === 1)
+  if (category == 1)
     selectReviewQuery += ` AND Rev.userIdx in (select F.followIdx from Follow F where F.followerIdx=${userIdx})`;
 
   if (typeof score === "object") {
