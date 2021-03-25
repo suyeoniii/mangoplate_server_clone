@@ -201,7 +201,7 @@ left outer join (select MAX(updatedAt) menuUpdatedAt,restaurantIdx from
   selectReviewListQuery += ` from Review Rev
   inner join Restaurant Res on Rev.restaurantIdx=Res.idx
   inner join User U on U.idx=Rev.userIdx
-  inner join (select count(*) reviews, Rev.idx idx from Review Rev group by Rev.restaurantIdx) as Reviews on Reviews.idx=Res.idx
+  left outer join (select count(*) reviews, Rev.idx idx from Review Rev group by Rev.restaurantIdx) as Reviews on Reviews.idx=Res.idx
   left outer join (select count(*) as follower,U.idx idx from Follow F
   inner join User U on F.followIdx=U.idx group by U.idx) F on F.idx=U.idx
   left outer join (select count(*) comment, reviewIdx from Comment group by reviewIdx) Com on Com.reviewIdx=Rev.idx
