@@ -43,4 +43,7 @@ module.exports = function (app) {
   );
   //리뷰 전체 조회 API
   app.get("/app/reviews", review.getReviews);
+
+  //리뷰 이미지 상세 조회 API
+  app.get("/app/reviews/image/:imgIdx", review.getImageById);
 };

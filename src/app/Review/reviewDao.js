@@ -297,6 +297,46 @@ async function selectReviews(
   console.log(reviewRows);
   return reviewRows;
 }
+//리뷰이미지 상세조회
+async function selectImageById(connection, imgIdx, userIdx) {
+  console.log(imgIdx);
+  var selectReviewQuery = `select Res.idx restaurantIdx, RI.idx imgIdx, restaurantName,U.profileImg, U.nickname,
+  Ifnull(FORMAT(reviews,0),0) reviews, Ifnull(FORMAT(follower,0),0) follower,
+  RI.imgUrl, Rev.contents, case
+ when TIMESTAMPDIFF(Minute, Rev.createdAt, current_timestamp()) < 60
+  then CONCAT(TIMESTAMPDIFF(Minute, Rev.createdAt, current_timestamp()),'분 전')
+  when TIMESTAMPDIFF(Hour, Rev.createdAt, current_timestamp()) < 24
+  then CONCAT(TIMESTAMPDIFF(Hour, Rev.createdAt, current_timestamp()),'시간 전')
+ when TIMESTAMPDIFF(Day, Rev.createdAt, current_timestamp()) < 8
+  then CONCAT(TIMESTAMPDIFF(Day, Rev.createdAt, current_timestamp()),'일 전')
+ else DATE_FORMAT(Rev.createdAt, '%Y-%m-%d')
+  end  as createdAt`;
+
+  if (userIdx) {
+    selectReviewQuery += `,ifnull(isHeart, 0) isHeart`;
+  }
+
+  selectReviewQuery += ` from ReviewImg RI
+  inner join Review Rev on Rev.idx=RI.reviewIdx
+  inner join Restaurant Res on Res.idx=Rev.restaurantIdx
+  inner join User U on U.idx=Rev.userIdx
+  left outer join (select count(*) reviews, Rev.idx idx from Review Rev group by Rev.restaurantIdx) as Reviews on Reviews.idx=Res.idx
+  left outer join (select count(*) as follower,U.idx idx from Follow F
+  inner join User U on F.followIdx=U.idx group by U.idx) F on F.idx=U.idx`;
+
+  if (userIdx) {
+    selectReviewQuery += ` left outer join (select count(case when Heart.status=0 AND userIdx=? then 1 end) isHeart, reviewIdx from Heart group by reviewIdx) Heart on Heart.reviewIdx=Rev.idx
+    `;
+  }
+  selectReviewQuery += ` where RI.idx=?;`;
+  console.log(selectReviewQuery);
+  const [reviewRows] = await connection.query(selectReviewQuery, [
+    userIdx,
+    imgIdx,
+  ]);
+
+  return reviewRows;
+}
 module.exports = {
   selectReviewById,
   insertReview,
@@ -311,4 +351,5 @@ module.exports = {
   updateReviewComment,
   updateReviewCommentStatus,
   selectReviews,
+  selectImageById,
 };

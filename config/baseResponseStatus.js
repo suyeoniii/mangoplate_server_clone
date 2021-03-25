@@ -319,6 +319,11 @@ module.exports = {
     code: 2059,
     message: "본인을 팔로우할 수 없습니다",
   },
+  IMAGE_ID_EMPTY: {
+    isSuccess: false,
+    code: 2060,
+    message: "imgIdx를 입력해주세요",
+  },
 
   // Response error
   SIGNUP_REDUNDANT_EMAIL: {

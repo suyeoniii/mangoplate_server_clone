@@ -295,3 +295,37 @@ exports.getReviews = async function (req, res) {
 
   return res.send(response(baseResponse.SUCCESS, reviewResult));
 };
+/**
+ * API No.
+ * API Name : 리뷰 이미지 상세 조회
+ * [GET] /app/reviews/image/:imgIdx
+ */
+exports.getImageById = async function (req, res) {
+  /**
+   * path variable : imgIdx
+   */
+  const token = req.headers["x-access-token"] || req.query.token;
+  var userIdFromJWT;
+  const imgIdx = req.params.imgIdx;
+
+  //토큰 받은 경우
+  if (token) {
+    jwt.verify(token, secret_config.jwtsecret, (err, verifiedToken) => {
+      if (verifiedToken) {
+        userIdFromJWT = verifiedToken.userIdx;
+      }
+    });
+    if (!userIdFromJWT) {
+      return res.send(errResponse(baseResponse.TOKEN_VERIFICATION_FAILURE));
+    }
+  }
+
+  if (!imgIdx) return res.send(response(baseResponse.IMAGE_ID_EMPTY));
+
+  const imageResult = await reviewProvider.retrieveImageById(
+    imgIdx,
+    userIdFromJWT
+  );
+
+  return res.send(response(baseResponse.SUCCESS, imageResult));
+};

@@ -60,3 +60,13 @@ exports.retrieveReviews = async function (
   connection.release();
   return reviewResult;
 };
+exports.retrieveImageById = async function (imgIdx, userIdx) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const imageResult = await reviewDao.selectImageById(
+    connection,
+    imgIdx,
+    userIdx
+  );
+  connection.release();
+  return imageResult[0];
+};
