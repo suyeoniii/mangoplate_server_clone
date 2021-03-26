@@ -673,7 +673,7 @@ async function selectRecommend(connection, userIdx, restaurantIdx, lat, long) {
     -radians('${long}'))+sin(radians('${lat}'))*sin(radians(lati)))),2)
     AS distance
   FROM Restaurant
-Having distance <= 50) dis on dis.idx=Res.idx
+Having distance <= 2) dis on dis.idx=Res.idx
 left outer join (select count(*) stars,restaurantIdx from Star where status=0 group by Star.restaurantIdx) S on S.restaurantIdx=Res.idx
 left outer join (select count(*) visited,restaurantIdx from Visited where status=0 group by Visited.restaurantIdx) VI on VI.restaurantIdx=Res.idx
 where Res.idx != ?
@@ -682,7 +682,7 @@ ORDER BY ifnull(stars,0)+ifnull(visited,0)*2 DESC limit 4;`;
   const [reviewRows] = await connection.query(selectRecommendQuery, [
     restaurantIdx,
   ]);
-
+  console.log(selectRecommendQuery);
   return reviewRows;
 }
 async function selectLocation(connection, restaurantIdx) {
