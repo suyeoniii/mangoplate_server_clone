@@ -1,5 +1,3 @@
-본 템플릿은 소프트스퀘어드 서버 교육용 Node.js 템플릿 입니다. (2021 ver.)
-
 # Mangoplate Clone Coding
 > 2021.02~2021.03
 
